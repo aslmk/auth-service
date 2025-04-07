@@ -1,0 +1,90 @@
+package com.aslmk.authenticationservice.service.Impl;
+
+import com.aslmk.authenticationservice.dto.RegistrationRequestDto;
+import com.aslmk.authenticationservice.entity.UserEntity;
+import com.aslmk.authenticationservice.entity.UserRole;
+import com.aslmk.authenticationservice.exception.EmailAlreadyExistsException;
+import com.aslmk.authenticationservice.exception.ServiceException;
+import com.aslmk.authenticationservice.exception.UsernameAlreadyExistsException;
+import com.aslmk.authenticationservice.repository.UserRepository;
+import com.aslmk.authenticationservice.service.UserService;
+import jakarta.transaction.Transactional;
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+
+@Service
+public class UserServiceImpl implements UserService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Transactional
+    public UserEntity saveUser(RegistrationRequestDto registrationRequestDto)
+            throws UsernameAlreadyExistsException, EmailAlreadyExistsException, ServiceException {
+        try {
+            UserEntity userEntity = UserEntity.builder()
+                    .username(registrationRequestDto.getUsername())
+                    .password(passwordEncoder.encode(registrationRequestDto.getPassword()))
+                    .email(registrationRequestDto.getEmail())
+                    .role(UserRole.USER)
+                    .build();
+
+            return userRepository.save(userEntity);
+        } catch (DataIntegrityViolationException e) {
+            Throwable rootCause = e.getRootCause();
+            if (rootCause instanceof ConstraintViolationException cve) {
+                String constraintName = cve.getConstraintName();
+
+                if (constraintName == null) {
+                    throw new ServiceException("Unknown database constraint violation: " + e);
+                }
+
+                switch (constraintName) {
+                    case "users_username_key" ->
+                            throw new UsernameAlreadyExistsException(
+                                    String.format("User with username \"%s\" already exists", registrationRequestDto.getUsername())
+                            );
+                    case "users_email_key" ->
+                            throw new EmailAlreadyExistsException(
+                                    String.format("User with email \"%s\" already exists", registrationRequestDto.getEmail())
+                            );
+                    default -> throw new ServiceException("Database constraint violation: " + constraintName);
+                }
+            } else {
+                throw new ServiceException("Unexpected error occurred while saving user: " + e.getMessage());
+            }
+        }
+
+    }
+
+
+    @Override
+    public Optional<UserEntity> findUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        UserEntity userEntity = findUserByEmail(email).orElseThrow(
+                () -> new UsernameNotFoundException(String.format("User with email \"%s\" not found", email))
+        );
+        return User.builder()
+                .username(userEntity.getEmail())
+                .password(userEntity.getPassword())
+                .roles(userEntity.getRole().toString())
+                .build();
+
+    }
+}
