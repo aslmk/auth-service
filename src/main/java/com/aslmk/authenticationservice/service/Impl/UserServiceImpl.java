@@ -2,11 +2,12 @@ package com.aslmk.authenticationservice.service.Impl;
 
 import com.aslmk.authenticationservice.dto.RegistrationRequestDto;
 import com.aslmk.authenticationservice.entity.UserEntity;
-import com.aslmk.authenticationservice.entity.UserRole;
+import com.aslmk.authenticationservice.entity.UserRoleEntity;
 import com.aslmk.authenticationservice.exception.EmailAlreadyExistsException;
 import com.aslmk.authenticationservice.exception.ServiceException;
 import com.aslmk.authenticationservice.exception.UsernameAlreadyExistsException;
 import com.aslmk.authenticationservice.repository.UserRepository;
+import com.aslmk.authenticationservice.repository.UserRoleRepository;
 import com.aslmk.authenticationservice.service.UserService;
 import jakarta.transaction.Transactional;
 import org.hibernate.exception.ConstraintViolationException;
@@ -22,10 +23,12 @@ import java.util.Optional;
 @Service
 public class UserServiceImpl implements UserService {
 
+    private final UserRoleRepository userRoleRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRoleRepository userRoleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRoleRepository = userRoleRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -34,11 +37,14 @@ public class UserServiceImpl implements UserService {
     public UserEntity saveUser(RegistrationRequestDto registrationRequestDto)
             throws UsernameAlreadyExistsException, EmailAlreadyExistsException, ServiceException {
         try {
+            UserRoleEntity userRoleEntity = userRoleRepository.findByRoleName("USER")
+                    .orElseThrow(() -> new ServiceException("Default user role not found"));;
+
             UserEntity userEntity = UserEntity.builder()
                     .username(registrationRequestDto.getUsername())
                     .password(passwordEncoder.encode(registrationRequestDto.getPassword()))
                     .email(registrationRequestDto.getEmail())
-                    .role(UserRole.USER)
+                    .role(userRoleEntity)
                     .build();
 
             return userRepository.save(userEntity);
