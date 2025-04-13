@@ -51,7 +51,7 @@ public class AuthServiceImpl implements AuthService {
                 .id(userEntity.getId())
                 .username(userEntity.getUsername())
                 .email(userEntity.getEmail())
-                .role(userEntity.getRole().toString())
+                .role(userEntity.getRole().getRoleName())
                 .build();
     }
 
@@ -76,7 +76,7 @@ public class AuthServiceImpl implements AuthService {
                 .id(userEntity.getId())
                 .username(userEntity.getUsername())
                 .email(userEntity.getEmail())
-                .role(userEntity.getRole().toString())
+                .role(userEntity.getRole().getRoleName())
                 .build();
     }
 
