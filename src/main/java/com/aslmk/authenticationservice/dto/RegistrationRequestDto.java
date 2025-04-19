@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 public class RegistrationRequestDto {
     @NotBlank(message = "Username is required")
-    @Size(min = 3, max = 20)
+    @Size(min = 3, max = 20, message = "The size should be in the range from 3 to 20")
     private String username;
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
