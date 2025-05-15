@@ -5,6 +5,7 @@ import com.aslmk.authenticationservice.dto.RegistrationRequestDto;
 import com.aslmk.authenticationservice.dto.UserResponseDto;
 import com.aslmk.authenticationservice.entity.UserEntity;
 import com.aslmk.authenticationservice.exception.UserNotFoundException;
+import com.aslmk.authenticationservice.mapper.UserResponseDtoMapper;
 import com.aslmk.authenticationservice.service.AuthService;
 import com.aslmk.authenticationservice.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,12 +23,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthServiceImpl implements AuthService {
 
+    private final UserResponseDtoMapper userResponseDtoMapper;
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final SecurityContextRepository securityContextRepository;
     private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
 
-    public AuthServiceImpl(AuthenticationManager authenticationManager, UserService userService, SecurityContextRepository securityContextRepository) {
+    public AuthServiceImpl(UserResponseDtoMapper userResponseDtoMapper, AuthenticationManager authenticationManager, UserService userService, SecurityContextRepository securityContextRepository) {
+        this.userResponseDtoMapper = userResponseDtoMapper;
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.securityContextRepository = securityContextRepository;
@@ -47,12 +50,9 @@ public class AuthServiceImpl implements AuthService {
 
         saveSecurityContext(authentication, httpRequest, httpResponse);
 
-        return UserResponseDto.builder()
-                .id(userEntity.getId())
-                .username(userEntity.getUsername())
-                .email(userEntity.getEmail())
-                .role(userEntity.getRole().getRoleName())
-                .build();
+        UserResponseDto userResponseDto = userResponseDtoMapper.mapToUserResponseDto(userEntity);
+        userResponseDto.setRole(userEntity.getRole().getRoleName());
+        return userResponseDto;
     }
 
     @Override
@@ -71,13 +71,9 @@ public class AuthServiceImpl implements AuthService {
         UserEntity userEntity = userService.findUserByEmail(userDetails.getUsername()).orElseThrow(
                 () -> new UserNotFoundException("User " + userDetails.getUsername() + " not found")
         );
-
-        return UserResponseDto.builder()
-                .id(userEntity.getId())
-                .username(userEntity.getUsername())
-                .email(userEntity.getEmail())
-                .role(userEntity.getRole().getRoleName())
-                .build();
+        UserResponseDto userResponseDto = userResponseDtoMapper.mapToUserResponseDto(userEntity);
+        userResponseDto.setRole(userEntity.getRole().getRoleName());
+        return userResponseDto;
     }
 
     private void saveSecurityContext(Authentication authentication, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
