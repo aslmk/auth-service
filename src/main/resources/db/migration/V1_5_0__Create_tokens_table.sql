@@ -1,0 +1,7 @@
+CREATE TABLE tokens (
+    id SERIAL PRIMARY KEY NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    token VARCHAR(255) NOT NULL UNIQUE,
+    token_type VARCHAR(100) NOT NULL,
+    expires_at TIMESTAMP NOT NULL
+);
