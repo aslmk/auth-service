@@ -4,6 +4,7 @@ import com.aslmk.authenticationservice.dto.LoginRequestDto;
 import com.aslmk.authenticationservice.dto.RegistrationRequestDto;
 import com.aslmk.authenticationservice.dto.UserResponseDto;
 import com.aslmk.authenticationservice.entity.UserEntity;
+import com.aslmk.authenticationservice.exception.AuthenticationFailedException;
 import com.aslmk.authenticationservice.exception.UserNotFoundException;
 import com.aslmk.authenticationservice.mapper.UserResponseDtoMapper;
 import com.aslmk.authenticationservice.service.AuthService;
@@ -11,6 +12,7 @@ import com.aslmk.authenticationservice.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -63,17 +65,21 @@ public class AuthServiceImpl implements AuthService {
         UsernamePasswordAuthenticationToken authenticationToken = UsernamePasswordAuthenticationToken
                 .unauthenticated(loginRequestDto.getEmail(), loginRequestDto.getPassword());
 
-        Authentication authentication = authenticationManager.authenticate(authenticationToken);
+        try {
+            Authentication authentication = authenticationManager.authenticate(authenticationToken);
 
-        saveSecurityContext(authentication, httpRequest, httpResponse);
+            saveSecurityContext(authentication, httpRequest, httpResponse);
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        UserEntity userEntity = userService.findUserByEmail(userDetails.getUsername()).orElseThrow(
-                () -> new UserNotFoundException("User " + userDetails.getUsername() + " not found")
-        );
-        UserResponseDto userResponseDto = userResponseDtoMapper.mapToUserResponseDto(userEntity);
-        userResponseDto.setRole(userEntity.getRole().getRoleName());
-        return userResponseDto;
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            UserEntity userEntity = userService.findUserByEmail(userDetails.getUsername()).orElseThrow(
+                    () -> new UserNotFoundException("User " + userDetails.getUsername() + " not found")
+            );
+            UserResponseDto userResponseDto = userResponseDtoMapper.mapToUserResponseDto(userEntity);
+            userResponseDto.setRole(userEntity.getRole().getRoleName());
+            return userResponseDto;
+        } catch (BadCredentialsException e) {
+            throw new AuthenticationFailedException("Email or password is incorrect");
+        }
     }
 
     private void saveSecurityContext(Authentication authentication, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
