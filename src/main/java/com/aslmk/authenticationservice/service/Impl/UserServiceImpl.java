@@ -1,11 +1,14 @@
 package com.aslmk.authenticationservice.service.Impl;
 
 import com.aslmk.authenticationservice.dto.RegistrationRequestDto;
+import com.aslmk.authenticationservice.entity.AccountEntity;
+import com.aslmk.authenticationservice.entity.AuthMethod;
 import com.aslmk.authenticationservice.entity.UserEntity;
 import com.aslmk.authenticationservice.entity.UserRoleEntity;
 import com.aslmk.authenticationservice.exception.EmailAlreadyExistsException;
 import com.aslmk.authenticationservice.exception.ServiceException;
 import com.aslmk.authenticationservice.exception.UsernameAlreadyExistsException;
+import com.aslmk.authenticationservice.repository.AccountEntityRepository;
 import com.aslmk.authenticationservice.repository.UserRepository;
 import com.aslmk.authenticationservice.repository.UserRoleRepository;
 import com.aslmk.authenticationservice.service.UserService;
@@ -18,6 +21,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -26,15 +31,20 @@ public class UserServiceImpl implements UserService {
     private final UserRoleRepository userRoleRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AccountEntityRepository accountEntityRepository;
 
-    public UserServiceImpl(UserRoleRepository userRoleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRoleRepository userRoleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, AccountEntityRepository accountEntityRepository) {
         this.userRoleRepository = userRoleRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.accountEntityRepository = accountEntityRepository;
     }
 
     @Transactional
-    public UserEntity saveUser(RegistrationRequestDto registrationRequestDto)
+    public UserEntity saveUser(RegistrationRequestDto registrationRequestDto,
+                               String pictureUrl,
+                               AuthMethod authMethod,
+                               boolean isVerified)
             throws UsernameAlreadyExistsException, EmailAlreadyExistsException, ServiceException {
         try {
             UserRoleEntity userRoleEntity = userRoleRepository.findByRoleName("USER")
@@ -42,10 +52,21 @@ public class UserServiceImpl implements UserService {
 
             UserEntity userEntity = UserEntity.builder()
                     .username(registrationRequestDto.getUsername())
-                    .password(passwordEncoder.encode(registrationRequestDto.getPassword()))
+                    .password(
+                            !registrationRequestDto.getPassword().isBlank()
+                                    ? passwordEncoder.encode(registrationRequestDto.getPassword())
+                                    : ""
+                    )
                     .email(registrationRequestDto.getEmail())
                     .role(userRoleEntity)
+                    .authMethod(authMethod)
+                    .verified(isVerified)
+                    .pictureUrl(pictureUrl)
                     .build();
+
+            List<AccountEntity> userAccounts = accountEntityRepository.findAllByUserId(userEntity.getId())
+                    .orElse(Collections.emptyList());
+            userEntity.setAccounts(userAccounts);
 
             return userRepository.save(userEntity);
         } catch (DataIntegrityViolationException e) {

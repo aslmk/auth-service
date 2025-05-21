@@ -3,6 +3,7 @@ package com.aslmk.authenticationservice.service.Impl;
 import com.aslmk.authenticationservice.dto.LoginRequestDto;
 import com.aslmk.authenticationservice.dto.RegistrationRequestDto;
 import com.aslmk.authenticationservice.dto.UserResponseDto;
+import com.aslmk.authenticationservice.entity.AuthMethod;
 import com.aslmk.authenticationservice.entity.UserEntity;
 import com.aslmk.authenticationservice.exception.AuthenticationFailedException;
 import com.aslmk.authenticationservice.exception.UserNotFoundException;
@@ -43,7 +44,10 @@ public class AuthServiceImpl implements AuthService {
                                         HttpServletRequest httpRequest,
                                         HttpServletResponse httpResponse) {
 
-        UserEntity userEntity = userService.saveUser(registrationRequestDto);
+        UserEntity userEntity = userService.saveUser(registrationRequestDto,
+                "",
+                AuthMethod.CREDENTIALS,
+                false);
 
         UsernamePasswordAuthenticationToken authenticationToken = UsernamePasswordAuthenticationToken
                 .unauthenticated(registrationRequestDto.getEmail(), registrationRequestDto.getPassword());
@@ -54,6 +58,7 @@ public class AuthServiceImpl implements AuthService {
 
         UserResponseDto userResponseDto = userResponseDtoMapper.mapToUserResponseDto(userEntity);
         userResponseDto.setRole(userEntity.getRole().getRoleName());
+        userResponseDto.setAccounts(userEntity.getAccounts());
         return userResponseDto;
     }
 
@@ -76,6 +81,7 @@ public class AuthServiceImpl implements AuthService {
             );
             UserResponseDto userResponseDto = userResponseDtoMapper.mapToUserResponseDto(userEntity);
             userResponseDto.setRole(userEntity.getRole().getRoleName());
+            userResponseDto.setAccounts(userEntity.getAccounts());
             return userResponseDto;
         } catch (BadCredentialsException e) {
             throw new AuthenticationFailedException("Email or password is incorrect");

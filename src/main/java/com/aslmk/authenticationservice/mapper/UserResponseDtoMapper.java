@@ -11,5 +11,6 @@ import org.mapstruct.ReportingPolicy;
 public interface UserResponseDtoMapper {
 
     @Mapping(target = "role", ignore = true)
+    @Mapping(target = "accounts", ignore = true)
     UserResponseDto mapToUserResponseDto(UserEntity userEntity);
 }
