@@ -36,8 +36,10 @@ public class UserEntity {
     private UserRoleEntity role;
 
     private String pictureUrl;
-    private boolean isVerified;
-    private boolean isTwoFactorEnabled;
+    @Column(name = "is_verified")
+    private boolean verified;
+    @Column(name = "is_two_factor_enabled")
+    private boolean twoFactorEnabled;
     @Enumerated(EnumType.STRING)
     private AuthMethod authMethod;
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
