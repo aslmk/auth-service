@@ -1,5 +1,6 @@
 package com.aslmk.authenticationservice.dto;
 
+import com.aslmk.authenticationservice.annotation.PasswordMatches;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -8,6 +9,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@PasswordMatches
 public class RegistrationRequestDto {
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 20, message = "The size should be in the range from 3 to 20")
