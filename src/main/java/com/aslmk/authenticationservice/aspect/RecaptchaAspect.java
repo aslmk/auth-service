@@ -21,7 +21,7 @@ public class RecaptchaAspect {
         this.recaptchaService = recaptchaService;
     }
 
-    @Before(value = "@annotation(ValidateRecaptcha)")
+    @Before(value = "@annotation(com.aslmk.authenticationservice.annotation.ValidateRecaptcha)")
     public void validateRecaptcha() {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
         String recaptcha = request.getHeader("recaptcha");
