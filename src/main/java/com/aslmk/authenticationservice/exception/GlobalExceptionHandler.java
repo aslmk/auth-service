@@ -53,6 +53,16 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(getErrorResponse(ex.getMessage(), List.of(), HttpStatus.FORBIDDEN), HttpStatus.FORBIDDEN);
     }
 
+    @ExceptionHandler(RecaptchaValidationFailedException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<Map<String, Object>> handleRecaptchaValidationFailed(RecaptchaValidationFailedException ex) {
+        List<Map<String, String>> errors = ex.getErrorCodes()
+                .stream()
+                .map(error -> Map.of("error", error))
+                .toList();
+        return new ResponseEntity<>(getErrorResponse(ex.getMessage(), errors, HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+    }
+
     private Map<String, Object> getErrorResponse(String message, List<Map<String, String>> errors, HttpStatus status) {
         Map<String, Object> errorResponse = new LinkedHashMap<>();
         errorResponse.put("timestamp", LocalDateTime.now());

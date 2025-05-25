@@ -3,6 +3,7 @@ package com.aslmk.authenticationservice.controller;
 import com.aslmk.authenticationservice.dto.LoginRequestDto;
 import com.aslmk.authenticationservice.dto.RegistrationRequestDto;
 import com.aslmk.authenticationservice.dto.UserResponseDto;
+import com.aslmk.authenticationservice.annotation.ValidateRecaptcha;
 import com.aslmk.authenticationservice.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,6 +26,7 @@ public class AuthController {
         this.authService = authService;
     }
 
+    @ValidateRecaptcha
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegistrationRequestDto registrationRequestDto,
                                       HttpServletRequest httpRequest,
@@ -37,6 +39,7 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @ValidateRecaptcha
     @PostMapping("/login")
     public ResponseEntity<?> authenticate(@Valid @RequestBody LoginRequestDto loginRequestDto,
                                                         HttpServletRequest httpRequest,
