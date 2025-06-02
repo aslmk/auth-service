@@ -1,9 +1,9 @@
 package com.aslmk.authenticationservice.controller;
 
+import com.aslmk.authenticationservice.annotation.ValidateRecaptcha;
 import com.aslmk.authenticationservice.dto.LoginRequestDto;
 import com.aslmk.authenticationservice.dto.RegistrationRequestDto;
 import com.aslmk.authenticationservice.dto.UserResponseDto;
-import com.aslmk.authenticationservice.annotation.ValidateRecaptcha;
 import com.aslmk.authenticationservice.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -35,8 +37,9 @@ public class AuthController {
         if (bindingResult.hasErrors()) {
             return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
-        UserResponseDto response = authService.registerUser(registrationRequestDto, httpRequest, httpResponse);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        String message = authService.registerUser(registrationRequestDto, httpRequest, httpResponse);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Map.of("message", message));
     }
 
     @ValidateRecaptcha

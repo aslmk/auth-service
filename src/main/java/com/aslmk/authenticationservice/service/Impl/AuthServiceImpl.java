@@ -6,6 +6,7 @@ import com.aslmk.authenticationservice.dto.UserResponseDto;
 import com.aslmk.authenticationservice.entity.AuthMethod;
 import com.aslmk.authenticationservice.entity.UserEntity;
 import com.aslmk.authenticationservice.exception.AuthenticationFailedException;
+import com.aslmk.authenticationservice.exception.BadRequestException;
 import com.aslmk.authenticationservice.exception.UserNotFoundException;
 import com.aslmk.authenticationservice.mapper.UserResponseDtoMapper;
 import com.aslmk.authenticationservice.service.AuthService;
@@ -19,7 +20,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Service;
 
@@ -31,16 +31,18 @@ public class AuthServiceImpl implements AuthService {
     private final UserService userService;
     private final SecurityContextRepository securityContextRepository;
     private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
+    private final EmailConfirmationService emailConfirmationService;
 
-    public AuthServiceImpl(UserResponseDtoMapper userResponseDtoMapper, AuthenticationManager authenticationManager, UserService userService, SecurityContextRepository securityContextRepository) {
+    public AuthServiceImpl(UserResponseDtoMapper userResponseDtoMapper, AuthenticationManager authenticationManager, UserService userService, SecurityContextRepository securityContextRepository, EmailConfirmationService emailConfirmationService) {
         this.userResponseDtoMapper = userResponseDtoMapper;
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.securityContextRepository = securityContextRepository;
+        this.emailConfirmationService = emailConfirmationService;
     }
 
     @Override
-    public UserResponseDto registerUser(RegistrationRequestDto registrationRequestDto,
+    public String registerUser(RegistrationRequestDto registrationRequestDto,
                                         HttpServletRequest httpRequest,
                                         HttpServletResponse httpResponse) {
 
@@ -49,6 +51,8 @@ public class AuthServiceImpl implements AuthService {
                 AuthMethod.CREDENTIALS,
                 false);
 
+        emailConfirmationService.sendVerificationToken(userEntity.getEmail());
+
         UsernamePasswordAuthenticationToken authenticationToken = UsernamePasswordAuthenticationToken
                 .unauthenticated(registrationRequestDto.getEmail(), registrationRequestDto.getPassword());
 
@@ -56,16 +60,22 @@ public class AuthServiceImpl implements AuthService {
 
         saveSecurityContext(authentication, httpRequest, httpResponse);
 
-        UserResponseDto userResponseDto = userResponseDtoMapper.mapToUserResponseDto(userEntity);
-        userResponseDto.setRole(userEntity.getRole().getRoleName());
-        userResponseDto.setAccounts(userEntity.getAccounts());
-        return userResponseDto;
+        return "Registration successful. Check your inbox to verify your email";
     }
 
     @Override
     public UserResponseDto authenticateUser(LoginRequestDto loginRequestDto,
                                             HttpServletRequest httpRequest,
                                             HttpServletResponse httpResponse) {
+
+        UserEntity userEntity = userService.findUserByEmail(loginRequestDto.getEmail()).orElseThrow(
+                () -> new UserNotFoundException("User " + loginRequestDto.getEmail() + " not found")
+        );
+
+        if (!userEntity.isVerified()) {
+            emailConfirmationService.sendVerificationToken(userEntity.getEmail());
+            throw new BadRequestException("Email not verified. Check your inbox for a verification token");
+        }
 
         UsernamePasswordAuthenticationToken authenticationToken = UsernamePasswordAuthenticationToken
                 .unauthenticated(loginRequestDto.getEmail(), loginRequestDto.getPassword());
@@ -75,10 +85,6 @@ public class AuthServiceImpl implements AuthService {
 
             saveSecurityContext(authentication, httpRequest, httpResponse);
 
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            UserEntity userEntity = userService.findUserByEmail(userDetails.getUsername()).orElseThrow(
-                    () -> new UserNotFoundException("User " + userDetails.getUsername() + " not found")
-            );
             UserResponseDto userResponseDto = userResponseDtoMapper.mapToUserResponseDto(userEntity);
             userResponseDto.setRole(userEntity.getRole().getRoleName());
             userResponseDto.setAccounts(userEntity.getAccounts());
