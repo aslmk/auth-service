@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
             throws UsernameAlreadyExistsException, EmailAlreadyExistsException, ServiceException {
         try {
             UserRoleEntity userRoleEntity = userRoleRepository.findByRoleName("USER")
-                    .orElseThrow(() -> new ServiceException("Default user role not found"));;
+                    .orElseThrow(() -> new ServiceException("Default user role not found"));
 
             UserEntity userEntity = UserEntity.builder()
                     .username(registrationRequestDto.getUsername())
@@ -99,6 +99,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<UserEntity> findUserByEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+
+    @Override
+    public void updateUserVerificationStatus(UserEntity user, boolean verified) {
+        user.setVerified(verified);
+        userRepository.save(user);
     }
 
     @Override
