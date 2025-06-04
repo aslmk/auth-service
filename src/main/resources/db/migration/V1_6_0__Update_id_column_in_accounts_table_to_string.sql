@@ -1,0 +1,17 @@
+ALTER TABLE accounts ADD COLUMN id_temp VARCHAR(50);
+
+UPDATE accounts SET id_temp = id::VARCHAR;
+
+ALTER TABLE accounts ALTER COLUMN id DROP DEFAULT;
+
+ALTER TABLE accounts DROP CONSTRAINT accounts_pkey;
+
+DROP SEQUENCE IF EXISTS accounts_id_seq;
+
+ALTER TABLE accounts DROP COLUMN id;
+
+ALTER TABLE accounts RENAME COLUMN id_temp TO id;
+
+ALTER TABLE accounts ALTER COLUMN id SET NOT NULL;
+
+ALTER TABLE accounts ADD PRIMARY KEY (id);
