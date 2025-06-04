@@ -8,7 +8,8 @@ import com.aslmk.authenticationservice.entity.UserRoleEntity;
 import com.aslmk.authenticationservice.exception.EmailAlreadyExistsException;
 import com.aslmk.authenticationservice.exception.ServiceException;
 import com.aslmk.authenticationservice.exception.UsernameAlreadyExistsException;
-import com.aslmk.authenticationservice.repository.AccountEntityRepository;
+import com.aslmk.authenticationservice.provider.OAuthUserInfo;
+import com.aslmk.authenticationservice.repository.AccountRepository;
 import com.aslmk.authenticationservice.repository.UserRepository;
 import com.aslmk.authenticationservice.repository.UserRoleRepository;
 import com.aslmk.authenticationservice.service.UserService;
@@ -21,6 +22,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -31,13 +33,13 @@ public class UserServiceImpl implements UserService {
     private final UserRoleRepository userRoleRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AccountEntityRepository accountEntityRepository;
+    private final AccountRepository accountRepository;
 
-    public UserServiceImpl(UserRoleRepository userRoleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, AccountEntityRepository accountEntityRepository) {
+    public UserServiceImpl(UserRoleRepository userRoleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder, AccountRepository accountRepository) {
         this.userRoleRepository = userRoleRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.accountEntityRepository = accountEntityRepository;
+        this.accountRepository = accountRepository;
     }
 
     @Transactional
@@ -64,7 +66,7 @@ public class UserServiceImpl implements UserService {
                     .pictureUrl(pictureUrl)
                     .build();
 
-            List<AccountEntity> userAccounts = accountEntityRepository.findAllByUserId(userEntity.getId())
+            List<AccountEntity> userAccounts = accountRepository.findAllByUserId(userEntity.getId())
                     .orElse(Collections.emptyList());
             userEntity.setAccounts(userAccounts);
 
@@ -105,6 +107,24 @@ public class UserServiceImpl implements UserService {
     public void updateUserVerificationStatus(UserEntity user, boolean verified) {
         user.setVerified(verified);
         userRepository.save(user);
+    }
+
+    @Override
+    public UserEntity createUserFromOAuth(OAuthUserInfo userInfo) throws ServiceException {
+        UserRoleEntity userRole = userRoleRepository.findByRoleName("USER")
+                .orElseThrow(() -> new ServiceException("Default user role not found"));
+
+        UserEntity userEntity = UserEntity.builder()
+                .username(userInfo.getName())
+                .email(userInfo.getEmail())
+                .password("")
+                .pictureUrl(userInfo.getPicture())
+                .createdAt(LocalDateTime.now())
+                .verified(true)
+                .authMethod(AuthMethod.valueOf(userInfo.getProvider().toUpperCase()))
+                .role(userRole)
+                .build();
+        return userRepository.save(userEntity);
     }
 
     @Override

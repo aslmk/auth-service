@@ -3,6 +3,7 @@ package com.aslmk.authenticationservice.service;
 import com.aslmk.authenticationservice.dto.RegistrationRequestDto;
 import com.aslmk.authenticationservice.entity.AuthMethod;
 import com.aslmk.authenticationservice.entity.UserEntity;
+import com.aslmk.authenticationservice.provider.OAuthUserInfo;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.Optional;
@@ -14,4 +15,5 @@ public interface UserService extends UserDetailsService {
                         boolean isVerified);
     Optional<UserEntity> findUserByEmail(String email);
     void updateUserVerificationStatus(UserEntity user, boolean verified);
+    UserEntity createUserFromOAuth(OAuthUserInfo userInfo);
 }
