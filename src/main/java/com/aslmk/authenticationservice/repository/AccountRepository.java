@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface AccountEntityRepository extends JpaRepository<AccountEntity, Long> {
+public interface AccountRepository extends JpaRepository<AccountEntity, String> {
     Optional<List<AccountEntity>> findAllByUserId(Long userId);
+    Optional<AccountEntity> findByIdAndProvider(String id, String providerName);
 }
