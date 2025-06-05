@@ -2,6 +2,7 @@ package com.aslmk.authenticationservice.provider;
 
 import com.aslmk.authenticationservice.entity.AccountEntity;
 import com.aslmk.authenticationservice.entity.UserEntity;
+import com.aslmk.authenticationservice.exception.ProviderNotFoundException;
 import com.aslmk.authenticationservice.service.AccountService;
 import com.aslmk.authenticationservice.service.UserService;
 import org.springframework.stereotype.Service;
@@ -67,7 +68,7 @@ public class ProviderService implements OAuthService {
     private ProviderProperties getProvider(String name) {
         ProviderProperties provider = providerOptions.getProviders().get(name);
         if (provider == null) {
-            throw new IllegalArgumentException("No such provider: " + name);
+            throw new ProviderNotFoundException("No such provider: " + name);
         }
         return provider;
     }
@@ -76,7 +77,7 @@ public class ProviderService implements OAuthService {
         ProviderProperties provider = getProvider(providerName);
         OAuthUserInfoProvider userInfoProvider = userInfoProviders.get(providerName);
         if (userInfoProvider == null) {
-            throw new IllegalArgumentException("No such provider: " + providerName);
+            throw new ProviderNotFoundException("No such provider: " + providerName);
         }
 
         return userInfoProvider.getUserInfoByCode(code, provider);
