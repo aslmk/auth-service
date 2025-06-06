@@ -1,6 +1,8 @@
 package com.aslmk.authenticationservice.provider;
 
+import com.aslmk.authenticationservice.dto.LoginRequestDto;
+
 public interface OAuthService {
     String buildAuthorizationUrl(String providerName);
-    void processOAuthCallback(String providerName, String code);
+    LoginRequestDto processOAuthCallback(String providerName, String code);
 }

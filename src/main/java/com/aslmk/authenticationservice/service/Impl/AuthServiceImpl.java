@@ -17,11 +17,15 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -92,6 +96,27 @@ public class AuthServiceImpl implements AuthService {
         } catch (BadCredentialsException e) {
             throw new AuthenticationFailedException("Email or password is incorrect");
         }
+    }
+
+    public UserResponseDto authenticateOAuthUser(LoginRequestDto login,
+                                                 HttpServletRequest httpRequest,
+                                                 HttpServletResponse httpResponse) {
+        UserEntity userEntity = userService.findUserByEmail(login.getEmail()).orElseThrow(
+                () -> new UserNotFoundException("User " + login.getEmail() + " not found")
+        );
+
+        User userDetails = new User(userEntity.getEmail(),
+                "",
+                List.of(new SimpleGrantedAuthority(userEntity.getRole().getRoleName())));
+
+        UsernamePasswordAuthenticationToken authentication = UsernamePasswordAuthenticationToken
+                .authenticated(userDetails, "", userDetails.getAuthorities());
+        saveSecurityContext(authentication, httpRequest, httpResponse);
+
+        UserResponseDto userResponseDto = userResponseDtoMapper.mapToUserResponseDto(userEntity);
+        userResponseDto.setRole(userEntity.getRole().getRoleName());
+        userResponseDto.setAccounts(userEntity.getAccounts());
+        return userResponseDto;
     }
 
     private void saveSecurityContext(Authentication authentication, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {

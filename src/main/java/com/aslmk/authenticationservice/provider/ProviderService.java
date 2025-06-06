@@ -1,5 +1,6 @@
 package com.aslmk.authenticationservice.provider;
 
+import com.aslmk.authenticationservice.dto.LoginRequestDto;
 import com.aslmk.authenticationservice.entity.AccountEntity;
 import com.aslmk.authenticationservice.entity.UserEntity;
 import com.aslmk.authenticationservice.exception.ProviderNotFoundException;
@@ -48,8 +49,10 @@ public class ProviderService implements OAuthService {
     }
 
     @Override
-    public void processOAuthCallback(String providerName, String code) {
+    public LoginRequestDto processOAuthCallback(String providerName, String code) {
         OAuthUserInfo userInfo = fetchUserInfo(providerName, code);
+
+        LoginRequestDto login = new LoginRequestDto();
 
         Optional<AccountEntity> account = accountService.findByIdAndProvider(userInfo.getId(), userInfo.getProvider());
         if (account.isPresent()) {
@@ -59,10 +62,17 @@ public class ProviderService implements OAuthService {
                 accountService.linkAccountToUser(existingAccount, user, userInfo);
                 accountService.updateAccountTokens(userInfo, existingAccount);
             }
-            return;
+            login.setEmail(userInfo.getEmail());
+            login.setUsername(userInfo.getName());
+            login.setPassword("");
+            return login;
         }
         UserEntity user = userService.createUserFromOAuth(userInfo);
         accountService.createAccount(userInfo, user);
+        login.setEmail(user.getEmail());
+        login.setUsername(user.getUsername());
+        login.setPassword("");
+        return login;
     }
 
     private ProviderProperties getProvider(String name) {
