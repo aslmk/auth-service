@@ -16,4 +16,5 @@ public interface UserService extends UserDetailsService {
     Optional<UserEntity> findUserByEmail(String email);
     void updateUserVerificationStatus(UserEntity user, boolean verified);
     UserEntity createUserFromOAuth(OAuthUserInfo userInfo);
+    void updateUserPassword(UserEntity user, String password);
 }

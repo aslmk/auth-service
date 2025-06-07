@@ -109,6 +109,11 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    public void updateUserPassword(UserEntity user, String password) {
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
+    }
+
     @Override
     public UserEntity createUserFromOAuth(OAuthUserInfo userInfo) throws ServiceException {
         UserRoleEntity userRole = userRoleRepository.findByRoleName("USER")

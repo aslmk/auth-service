@@ -16,6 +16,10 @@ public class EmailService {
         sendMail(to,"Email Confirmation", verificationToken);
     }
 
+    public void sendPasswordResetEmail(String to, String token) {
+        sendMail(to,"Password Reset", token);
+    }
+
     private void sendMail(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
