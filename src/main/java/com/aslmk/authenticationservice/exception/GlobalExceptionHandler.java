@@ -87,6 +87,18 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(getErrorResponse(ex.getMessage(), List.of(), HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(PasswordResetTokenExpiredException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<Map<String, Object>> handlePasswordResetTokenExpired(PasswordResetTokenExpiredException ex) {
+        return new ResponseEntity<>(getErrorResponse(ex.getMessage(), List.of(), HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(PasswordResetTokenNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<Map<String, Object>> handlePasswordResetTokenNotFound(PasswordResetTokenNotFoundException ex) {
+        return new ResponseEntity<>(getErrorResponse(ex.getMessage(), List.of(), HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
+    }
+
     private Map<String, Object> getErrorResponse(String message, List<Map<String, String>> errors, HttpStatus status) {
         Map<String, Object> errorResponse = new LinkedHashMap<>();
         errorResponse.put("timestamp", LocalDateTime.now());
