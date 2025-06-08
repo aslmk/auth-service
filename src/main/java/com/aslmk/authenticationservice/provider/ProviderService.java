@@ -58,7 +58,7 @@ public class ProviderService implements OAuthService {
         if (account.isPresent()) {
             AccountEntity existingAccount = account.get();
             if (existingAccount.getUser() == null) {
-                UserEntity user = userService.createUserFromOAuth(userInfo);
+                UserEntity user = userService.createIfNotExistsUserFromOAuth(userInfo);
                 accountService.linkAccountToUser(existingAccount, user, userInfo);
                 accountService.updateAccountTokens(userInfo, existingAccount);
             }
@@ -67,7 +67,7 @@ public class ProviderService implements OAuthService {
             login.setPassword("");
             return login;
         }
-        UserEntity user = userService.createUserFromOAuth(userInfo);
+        UserEntity user = userService.createIfNotExistsUserFromOAuth(userInfo);
         accountService.createAccount(userInfo, user);
         login.setEmail(user.getEmail());
         login.setUsername(user.getUsername());

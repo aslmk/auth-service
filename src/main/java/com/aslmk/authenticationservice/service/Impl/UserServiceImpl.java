@@ -117,9 +117,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserEntity createUserFromOAuth(OAuthUserInfo userInfo) throws ServiceException {
+    public UserEntity createIfNotExistsUserFromOAuth(OAuthUserInfo userInfo) throws ServiceException {
         UserRoleEntity userRole = userRoleRepository.findByRoleName("USER")
                 .orElseThrow(() -> new ServiceException("Default user role not found"));
+
+        Optional<UserEntity> user = userRepository.findByEmail(userInfo.getEmail());
+
+        if (user.isPresent()) {
+            return user.get();
+        }
 
         UserEntity userEntity = UserEntity.builder()
                 .username(userInfo.getName())
