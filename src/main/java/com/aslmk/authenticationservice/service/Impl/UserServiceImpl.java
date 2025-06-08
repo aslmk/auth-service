@@ -66,11 +66,13 @@ public class UserServiceImpl implements UserService {
                     .pictureUrl(pictureUrl)
                     .build();
 
-            List<AccountEntity> userAccounts = accountRepository.findAllByUserId(userEntity.getId())
-                    .orElse(Collections.emptyList());
-            userEntity.setAccounts(userAccounts);
+            UserEntity savedUser = userRepository.save(userEntity);
 
-            return userRepository.save(userEntity);
+            List<AccountEntity> userAccounts = accountRepository.findAllByUserId(savedUser.getId())
+                    .orElse(Collections.emptyList());
+            savedUser.setAccounts(userAccounts);
+
+            return savedUser;
         } catch (DataIntegrityViolationException e) {
             if (e.getCause() instanceof ConstraintViolationException cve) {
                 String constraintName = cve.getConstraintName();
