@@ -1,5 +1,6 @@
 package com.aslmk.authenticationservice.provider;
 
+import com.aslmk.authenticationservice.exception.OAuthException;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -37,6 +38,10 @@ public class GoogleUserInfoProvider implements OAuthUserInfoProvider {
 
         ResponseEntity<Map> response = restTemplate.postForEntity(provider.getTokenUri(), request, Map.class);
 
+        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+            throw new OAuthException("Failed to retrieve access token from Google");
+        }
+
         String accessToken = (String) response.getBody().get("access_token");
 
         HttpHeaders userHeaders = new HttpHeaders();
@@ -46,6 +51,12 @@ public class GoogleUserInfoProvider implements OAuthUserInfoProvider {
         ResponseEntity<Map> userInfoResponse = restTemplate.exchange(
                 provider.getUserInfoUri(), HttpMethod.GET, userRequest, Map.class
         );
+
+        if (!userInfoResponse.getStatusCode().is2xxSuccessful() || userInfoResponse.getBody() == null) {
+            throw new OAuthException("Failed to exchange access token to user info from Google");
+        }
+
+
         return parseUserInfo(userInfoResponse.getBody(), response.getBody());
     }
 

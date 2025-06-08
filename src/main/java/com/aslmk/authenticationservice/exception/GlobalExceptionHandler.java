@@ -99,6 +99,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(getErrorResponse(ex.getMessage(), List.of(), HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(OAuthException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<Map<String, Object>> handleOAuthException(OAuthException ex) {
+        return new ResponseEntity<>(getErrorResponse(ex.getMessage(), List.of(), HttpStatus.INTERNAL_SERVER_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     private Map<String, Object> getErrorResponse(String message, List<Map<String, String>> errors, HttpStatus status) {
         Map<String, Object> errorResponse = new LinkedHashMap<>();
         errorResponse.put("timestamp", LocalDateTime.now());
