@@ -148,7 +148,7 @@ public class UserServiceImpl implements UserService {
         return User.builder()
                 .username(userEntity.getEmail())
                 .password(userEntity.getPassword())
-                .roles(userEntity.getRole().toString())
+                .roles(userEntity.getRole().getRoleName())
                 .build();
 
     }
