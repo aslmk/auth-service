@@ -57,13 +57,6 @@ public class AuthServiceImpl implements AuthService {
 
         emailConfirmationService.sendVerificationToken(userEntity.getEmail());
 
-        UsernamePasswordAuthenticationToken authenticationToken = UsernamePasswordAuthenticationToken
-                .unauthenticated(registrationRequestDto.getEmail(), registrationRequestDto.getPassword());
-
-        Authentication authentication = authenticationManager.authenticate(authenticationToken);
-
-        saveSecurityContext(authentication, httpRequest, httpResponse);
-
         return "Registration successful. Check your inbox to verify your email";
     }
 
