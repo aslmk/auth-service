@@ -89,10 +89,7 @@ public class AuthServiceImpl implements AuthService {
 
             saveSecurityContext(authentication, httpRequest, httpResponse);
 
-            UserResponseDto userResponseDto = userResponseDtoMapper.mapToUserResponseDto(userEntity);
-            userResponseDto.setRole(userEntity.getRole().getRoleName());
-            userResponseDto.setAccounts(userEntity.getAccounts());
-            return userResponseDto;
+            return buildUserResponse(userEntity);
         } catch (BadCredentialsException e) {
             throw new AuthenticationFailedException("Email or password is incorrect");
         }
@@ -113,12 +110,14 @@ public class AuthServiceImpl implements AuthService {
                 .authenticated(userDetails, "", userDetails.getAuthorities());
         saveSecurityContext(authentication, httpRequest, httpResponse);
 
-        UserResponseDto userResponseDto = userResponseDtoMapper.mapToUserResponseDto(userEntity);
-        userResponseDto.setRole(userEntity.getRole().getRoleName());
-        userResponseDto.setAccounts(userEntity.getAccounts());
-        return userResponseDto;
+        return buildUserResponse(userEntity);
     }
-
+    private UserResponseDto buildUserResponse(UserEntity userEntity) {
+        UserResponseDto dto = userResponseDtoMapper.mapToUserResponseDto(userEntity);
+        dto.setRole(userEntity.getRole().getRoleName());
+        dto.setAccounts(userEntity.getAccounts());
+        return dto;
+    }
     private void saveSecurityContext(Authentication authentication, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
         SecurityContext context = securityContextHolderStrategy.createEmptyContext();
         context.setAuthentication(authentication);
