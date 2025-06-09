@@ -39,7 +39,6 @@ public class AccountServiceImpl implements AccountService {
                 .expiresAt(LocalDateTime.now().plusSeconds(userInfo.getExpiresAt()))
                 .refreshToken(userInfo.getRefreshToken())
                 .createdAt(LocalDateTime.now())
-                .type("oauth")
                 .provider(userInfo.getProvider())
                 .build();
         accountRepository.save(accountEntity);

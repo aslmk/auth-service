@@ -19,7 +19,6 @@ public class AccountEntity {
     @Id
     private String id;
 
-    private String type;
     private String provider;
     private String refreshToken;
     private String accessToken;
