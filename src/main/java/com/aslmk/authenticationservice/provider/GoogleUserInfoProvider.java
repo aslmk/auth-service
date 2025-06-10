@@ -1,13 +1,13 @@
 package com.aslmk.authenticationservice.provider;
 
+import com.aslmk.authenticationservice.dto.GoogleTokenResponse;
+import com.aslmk.authenticationservice.dto.GoogleUserInfoResponse;
 import com.aslmk.authenticationservice.exception.OAuthException;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Map;
 
 @Component
 public class GoogleUserInfoProvider implements OAuthUserInfoProvider {
@@ -24,28 +24,28 @@ public class GoogleUserInfoProvider implements OAuthUserInfoProvider {
 
     @Override
     public OAuthUserInfo getUserInfoByCode(String code, ProviderProperties provider) throws OAuthException {
-        Map tokenResponse = exchangeAccessToken(code, provider);
+        GoogleTokenResponse tokenResponse = exchangeAccessToken(code, provider);
 
-        String accessToken = (String) tokenResponse.get("access_token");
+        String accessToken = tokenResponse.getAccessToken();
 
-        Map userInfo = fetchUserInfo(accessToken, provider);
+        GoogleUserInfoResponse userInfo = fetchUserInfo(accessToken, provider);
 
         return parseUserInfo(userInfo, tokenResponse);
     }
 
-    private OAuthUserInfo parseUserInfo(Map userInfo, Map response) {
+    private OAuthUserInfo parseUserInfo(GoogleUserInfoResponse userInfo, GoogleTokenResponse response) {
         return OAuthUserInfo.builder()
-                .id((String) userInfo.get("sub"))
-                .name((String) userInfo.get("name"))
-                .email((String) userInfo.get("email"))
-                .picture((String) userInfo.get("picture"))
-                .accessToken((String) response.get("access_token"))
-                .refreshToken((String) response.get("refresh_token"))
-                .expiresAt((Integer) response.get("expires_in"))
+                .id(userInfo.getSub())
+                .name(userInfo.getName())
+                .email(userInfo.getEmail())
+                .picture(userInfo.getPicture())
+                .accessToken(response.getAccessToken())
+                .refreshToken(response.getRefreshToken())
+                .expiresAt(response.getExpiresIn())
                 .provider(getProviderName())
                 .build();
     }
-    private Map exchangeAccessToken(String code, ProviderProperties provider) throws OAuthException {
+    private GoogleTokenResponse exchangeAccessToken(String code, ProviderProperties provider) throws OAuthException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
@@ -58,22 +58,22 @@ public class GoogleUserInfoProvider implements OAuthUserInfoProvider {
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
-        ResponseEntity<Map> response = restTemplate.postForEntity(provider.getTokenUri(), request, Map.class);
+        ResponseEntity<GoogleTokenResponse> response = restTemplate.postForEntity(provider.getTokenUri(), request, GoogleTokenResponse.class);
 
         return validateResponseBody(response, "Failed to retrieve access token from Google");
     }
-    private Map fetchUserInfo(String accessToken, ProviderProperties provider) throws OAuthException {
+    private GoogleUserInfoResponse fetchUserInfo(String accessToken, ProviderProperties provider) throws OAuthException {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
-        HttpEntity<?> userRequest = new HttpEntity<>(headers);
+        HttpEntity<Void> request = new HttpEntity<>(headers);
 
-        ResponseEntity<Map> response = restTemplate.exchange(
-                provider.getUserInfoUri(), HttpMethod.GET, userRequest, Map.class
+        ResponseEntity<GoogleUserInfoResponse> response = restTemplate.exchange(
+                provider.getUserInfoUri(), HttpMethod.GET, request, GoogleUserInfoResponse.class
         );
 
         return validateResponseBody(response, "Failed to exchange access token to user info from Google");
     }
-    private Map validateResponseBody(ResponseEntity<Map> response, String errorMessage) {
+    private <T> T validateResponseBody(ResponseEntity<T> response, String errorMessage) {
         if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
             throw new OAuthException(errorMessage);
         }
