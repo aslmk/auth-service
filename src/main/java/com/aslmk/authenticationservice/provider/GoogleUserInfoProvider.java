@@ -30,10 +30,10 @@ public class GoogleUserInfoProvider implements OAuthUserInfoProvider {
 
         GoogleUserInfoResponse userInfo = fetchUserInfo(accessToken, provider);
 
-        return parseUserInfo(userInfo, tokenResponse);
+        return convertToOAuthUserInfo(userInfo, tokenResponse);
     }
 
-    private OAuthUserInfo parseUserInfo(GoogleUserInfoResponse userInfo, GoogleTokenResponse response) {
+    private OAuthUserInfo convertToOAuthUserInfo(GoogleUserInfoResponse userInfo, GoogleTokenResponse response) {
         return OAuthUserInfo.builder()
                 .id(userInfo.getSub())
                 .name(userInfo.getName())
