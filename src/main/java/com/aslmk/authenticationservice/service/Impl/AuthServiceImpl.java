@@ -37,13 +37,15 @@ public class AuthServiceImpl implements AuthService {
     private final SecurityContextRepository securityContextRepository;
     private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
     private final EmailConfirmationService emailConfirmationService;
+    private final TwoFactorAuthService twoFactorAuthService;
 
-    public AuthServiceImpl(UserResponseDtoMapper userResponseDtoMapper, AuthenticationManager authenticationManager, UserService userService, SecurityContextRepository securityContextRepository, EmailConfirmationService emailConfirmationService) {
+    public AuthServiceImpl(UserResponseDtoMapper userResponseDtoMapper, AuthenticationManager authenticationManager, UserService userService, SecurityContextRepository securityContextRepository, EmailConfirmationService emailConfirmationService, TwoFactorAuthService twoFactorAuthService) {
         this.userResponseDtoMapper = userResponseDtoMapper;
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.securityContextRepository = securityContextRepository;
         this.emailConfirmationService = emailConfirmationService;
+        this.twoFactorAuthService = twoFactorAuthService;
     }
 
     @Override
@@ -62,7 +64,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public UserResponseDto authenticateUser(LoginRequestDto loginRequestDto,
+    public String authenticateUser(LoginRequestDto loginRequestDto,
                                             HttpServletRequest httpRequest,
                                             HttpServletResponse httpResponse) {
 
@@ -75,6 +77,14 @@ public class AuthServiceImpl implements AuthService {
             throw new BadRequestException("Email not verified. Check your inbox for a verification token");
         }
 
+        if (userEntity.isTwoFactorEnabled()) {
+            if (loginRequestDto.getCode() != null) {
+                twoFactorAuthService.validateTwoFactorToken(userEntity.getEmail(), loginRequestDto.getCode());
+            } else {
+                return twoFactorAuthService.sendTwoFactorToken(userEntity.getEmail());
+            }
+        }
+
         UsernamePasswordAuthenticationToken authenticationToken = UsernamePasswordAuthenticationToken
                 .unauthenticated(loginRequestDto.getEmail(), loginRequestDto.getPassword());
 
@@ -83,7 +93,7 @@ public class AuthServiceImpl implements AuthService {
 
             saveSecurityContext(authentication, httpRequest, httpResponse);
 
-            return buildUserResponse(userEntity);
+            return "Login successful";
         } catch (BadCredentialsException e) {
             throw new AuthenticationFailedException("Email or password is incorrect");
         }

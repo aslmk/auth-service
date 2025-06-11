@@ -3,7 +3,6 @@ package com.aslmk.authenticationservice.controller;
 import com.aslmk.authenticationservice.annotation.ValidateRecaptcha;
 import com.aslmk.authenticationservice.dto.LoginRequestDto;
 import com.aslmk.authenticationservice.dto.RegistrationRequestDto;
-import com.aslmk.authenticationservice.dto.UserResponseDto;
 import com.aslmk.authenticationservice.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -51,7 +50,8 @@ public class AuthController {
         if (bindingResult.hasErrors()) {
             return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
         }
-        UserResponseDto response = authService.authenticateUser(loginRequestDto, httpRequest, httpResponse);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        String message = authService.authenticateUser(loginRequestDto, httpRequest, httpResponse);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Map.of("message", message));
     }
 }

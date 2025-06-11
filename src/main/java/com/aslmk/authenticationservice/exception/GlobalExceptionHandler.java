@@ -105,6 +105,18 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(getErrorResponse(ex.getMessage(), List.of(), HttpStatus.INTERNAL_SERVER_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(TwoFactorTokenExpiredException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<Map<String, Object>> handleTwoFactorTokenExpired(TwoFactorTokenExpiredException ex) {
+        return new ResponseEntity<>(getErrorResponse(ex.getMessage(), List.of(), HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(TwoFactorTokenNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<Map<String, Object>> handleTwoFactorTokenNotFound(TwoFactorTokenNotFoundException ex) {
+        return new ResponseEntity<>(getErrorResponse(ex.getMessage(), List.of(), HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
+    }
+
     private Map<String, Object> getErrorResponse(String message, List<Map<String, String>> errors, HttpStatus status) {
         Map<String, Object> errorResponse = new LinkedHashMap<>();
         errorResponse.put("timestamp", LocalDateTime.now());

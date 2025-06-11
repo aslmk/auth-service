@@ -9,6 +9,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
     String registerUser(RegistrationRequestDto registrationRequestDto, HttpServletRequest request, HttpServletResponse response);
-    UserResponseDto authenticateUser(LoginRequestDto loginRequestDto, HttpServletRequest request, HttpServletResponse httpServletResponse);
+    String authenticateUser(LoginRequestDto loginRequestDto, HttpServletRequest request, HttpServletResponse httpServletResponse);
     UserResponseDto authenticateOAuthUser(OAuthUserDto login, HttpServletRequest httpRequest, HttpServletResponse httpResponse);
 }

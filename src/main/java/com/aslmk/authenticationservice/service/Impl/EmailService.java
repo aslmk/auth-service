@@ -20,6 +20,10 @@ public class EmailService {
         sendMail(to,"Password Reset", token);
     }
 
+    public void sendTwoFactorAuthenticationTokenEmail(String to, String twoFactorToken) {
+        sendMail(to,"Two-Factor Authentication", twoFactorToken);
+    }
+
     private void sendMail(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
