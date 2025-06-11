@@ -1,6 +1,7 @@
 package com.aslmk.authenticationservice.service.Impl;
 
 import com.aslmk.authenticationservice.dto.LoginRequestDto;
+import com.aslmk.authenticationservice.dto.OAuthUserDto;
 import com.aslmk.authenticationservice.dto.RegistrationRequestDto;
 import com.aslmk.authenticationservice.dto.UserResponseDto;
 import com.aslmk.authenticationservice.entity.AuthMethod;
@@ -88,7 +89,7 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    public UserResponseDto authenticateOAuthUser(LoginRequestDto login,
+    public UserResponseDto authenticateOAuthUser(OAuthUserDto login,
                                                  HttpServletRequest httpRequest,
                                                  HttpServletResponse httpResponse) {
         UserEntity userEntity = userService.findUserByEmail(login.getEmail()).orElseThrow(

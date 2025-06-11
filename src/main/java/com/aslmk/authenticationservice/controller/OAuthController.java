@@ -1,6 +1,6 @@
 package com.aslmk.authenticationservice.controller;
 
-import com.aslmk.authenticationservice.dto.LoginRequestDto;
+import com.aslmk.authenticationservice.dto.OAuthUserDto;
 import com.aslmk.authenticationservice.exception.BadRequestException;
 import com.aslmk.authenticationservice.provider.OAuthService;
 import com.aslmk.authenticationservice.service.AuthService;
@@ -37,7 +37,7 @@ public class OAuthController {
         if (code == null || code.isEmpty()) {
             throw new BadRequestException("Invalid code");
         }
-        LoginRequestDto oAuthUser = providerService.processOAuthCallback(provider, code);
+        OAuthUserDto oAuthUser = providerService.processOAuthCallback(provider, code);
 
         return ResponseEntity.ok(authService.authenticateOAuthUser(oAuthUser, request, response));
     }
