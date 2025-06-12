@@ -14,6 +14,7 @@ import com.aslmk.authenticationservice.service.AuthService;
 import com.aslmk.authenticationservice.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -116,6 +117,16 @@ public class AuthServiceImpl implements AuthService {
 
         return buildUserResponse(userEntity);
     }
+
+    @Override
+    public void logout(HttpServletRequest httpRequest) {
+        HttpSession session = httpRequest.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        securityContextHolderStrategy.clearContext();
+    }
+
     private UserResponseDto buildUserResponse(UserEntity userEntity) {
         UserResponseDto dto = userResponseDtoMapper.mapToUserResponseDto(userEntity);
         dto.setRole(userEntity.getRole().getRoleName());

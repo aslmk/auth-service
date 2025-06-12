@@ -11,4 +11,5 @@ public interface AuthService {
     String registerUser(RegistrationRequestDto registrationRequestDto, HttpServletRequest request, HttpServletResponse response);
     String authenticateUser(LoginRequestDto loginRequestDto, HttpServletRequest request, HttpServletResponse httpServletResponse);
     UserResponseDto authenticateOAuthUser(OAuthUserDto login, HttpServletRequest httpRequest, HttpServletResponse httpResponse);
+    void logout(HttpServletRequest httpRequest);
 }
