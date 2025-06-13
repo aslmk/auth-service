@@ -53,7 +53,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest httpRequest) {
+    public ResponseEntity<Void> logout(HttpServletRequest httpRequest) {
         authService.logout(httpRequest);
         return ResponseEntity.noContent().build();
     }
