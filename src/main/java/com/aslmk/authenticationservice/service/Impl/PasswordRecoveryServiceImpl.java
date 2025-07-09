@@ -3,26 +3,27 @@ package com.aslmk.authenticationservice.service.Impl;
 import com.aslmk.authenticationservice.entity.TokenEntity;
 import com.aslmk.authenticationservice.entity.TokenType;
 import com.aslmk.authenticationservice.entity.UserEntity;
-import com.aslmk.authenticationservice.exception.*;
-import com.aslmk.authenticationservice.repository.TokenRepository;
+import com.aslmk.authenticationservice.exception.TokenExceptionMapper;
+import com.aslmk.authenticationservice.exception.TokenExpiredException;
+import com.aslmk.authenticationservice.exception.TokenNotFoundException;
+import com.aslmk.authenticationservice.exception.UserNotFoundException;
 import com.aslmk.authenticationservice.service.PasswordRecoveryService;
 import com.aslmk.authenticationservice.service.UserService;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.time.Duration;
 
 @Service
 public class PasswordRecoveryServiceImpl implements PasswordRecoveryService {
 
     private final UserService userService;
-    private final TokenRepository tokenRepository;
     private final EmailService emailService;
+    private final TokenLifecycleService tokenLifecycleService;
 
-    public PasswordRecoveryServiceImpl(UserService userService, TokenRepository tokenRepository, EmailService emailService) {
+    public PasswordRecoveryServiceImpl(UserService userService, EmailService emailService, TokenLifecycleService tokenLifecycleService) {
         this.userService = userService;
-        this.tokenRepository = tokenRepository;
         this.emailService = emailService;
+        this.tokenLifecycleService = tokenLifecycleService;
     }
 
     @Override
@@ -30,7 +31,9 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService {
         UserEntity user = userService.findUserByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User with email " + email + " not found"));
 
-        TokenEntity resetToken = generatePasswordResetToken(user.getEmail());
+        TokenEntity resetToken = tokenLifecycleService
+                .createToken(user.getEmail(), TokenType.PASSWORD_RESET, Duration.ofHours(1));
+
         emailService.sendPasswordResetEmail(resetToken.getEmail(), resetToken.getToken());
 
         return "Password reset token was successfully sent to your email";
@@ -38,36 +41,24 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService {
 
     @Override
     public String newPassword(String newPassword, String token) {
-        TokenEntity passwordResetToken = tokenRepository.findByTokenAndTokenType(token, TokenType.PASSWORD_RESET)
-                .orElseThrow(() -> new PasswordResetTokenNotFoundException("Password reset token not found"));
+        try {
+            TokenEntity tokenEntity = tokenLifecycleService
+                    .validateAndReturnTokenByValue(token, TokenType.PASSWORD_RESET);
 
-        boolean isTokenExpired = passwordResetToken.getExpiresAt().isBefore(LocalDateTime.now());
+            UserEntity user = userService.findUserByEmail(tokenEntity.getEmail())
+                    .orElseThrow(() -> new UserNotFoundException("User not found for this token"));
 
-        if (isTokenExpired) {
-            throw new PasswordResetTokenExpiredException("Password reset token has expired");
+            userService.updateUserPassword(user, newPassword);
+
+            tokenLifecycleService.invalidateToken(tokenEntity);
+        } catch (TokenNotFoundException e) {
+            throw TokenExceptionMapper
+                    .mapNotFound(TokenType.PASSWORD_RESET, "Password reset token not found");
+        } catch (TokenExpiredException e) {
+            throw TokenExceptionMapper
+                    .mapExpired(TokenType.PASSWORD_RESET, "Password reset token has expired");
         }
 
-        UserEntity user = userService.findUserByEmail(passwordResetToken.getEmail())
-                .orElseThrow(() -> new UserNotFoundException("User not found for this token"));
-
-        userService.updateUserPassword(user, newPassword);
-
-        tokenRepository.delete(passwordResetToken);
-
         return "Password was successfully changed";
-    }
-
-    private TokenEntity generatePasswordResetToken(String email) {
-        String token = UUID.randomUUID().toString();
-        LocalDateTime expiresAt = LocalDateTime.now().plusHours(1);
-        tokenRepository.deleteByEmailAndTokenType(email, TokenType.PASSWORD_RESET);
-        TokenEntity newToken = TokenEntity.builder()
-                .email(email)
-                .tokenType(TokenType.PASSWORD_RESET)
-                .expiresAt(expiresAt)
-                .token(token)
-                .build();
-
-        return tokenRepository.save(newToken);
     }
 }

@@ -3,68 +3,56 @@ package com.aslmk.authenticationservice.service.Impl;
 import com.aslmk.authenticationservice.entity.TokenEntity;
 import com.aslmk.authenticationservice.entity.TokenType;
 import com.aslmk.authenticationservice.entity.UserEntity;
+import com.aslmk.authenticationservice.exception.TokenExceptionMapper;
+import com.aslmk.authenticationservice.exception.TokenExpiredException;
+import com.aslmk.authenticationservice.exception.TokenNotFoundException;
 import com.aslmk.authenticationservice.exception.UserNotFoundException;
-import com.aslmk.authenticationservice.exception.VerificationTokenExpiredException;
-import com.aslmk.authenticationservice.exception.VerificationTokenNotFoundException;
-import com.aslmk.authenticationservice.repository.TokenRepository;
 import com.aslmk.authenticationservice.service.UserService;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.time.Duration;
 
 @Service
 public class EmailConfirmationService {
-    private final TokenRepository tokenRepository;
     private final EmailService emailService;
     private final UserService userService;
+    private final TokenLifecycleService tokenLifecycleService;
 
-    public EmailConfirmationService(TokenRepository tokenRepository, EmailService emailService, UserService userService) {
-        this.tokenRepository = tokenRepository;
+    public EmailConfirmationService(EmailService emailService, UserService userService, TokenLifecycleService tokenLifecycleService) {
         this.emailService = emailService;
         this.userService = userService;
+        this.tokenLifecycleService = tokenLifecycleService;
     }
 
     public String confirmEmail(String token) {
-        TokenEntity verificationToken = tokenRepository.findByTokenAndTokenType(token, TokenType.VERIFICATION)
-                .orElseThrow(() -> new VerificationTokenNotFoundException("Verification token not found"));
+        try {
+            TokenEntity tokenEntity = tokenLifecycleService
+                    .validateAndReturnTokenByValue(token, TokenType.VERIFICATION);
 
-        boolean isTokenExpired = verificationToken.getExpiresAt().isBefore(LocalDateTime.now());
+            UserEntity user = userService.findUserByEmail(tokenEntity.getEmail())
+                    .orElseThrow(() -> new UserNotFoundException("User not found for this token"));
 
-        if (isTokenExpired) {
-            throw new VerificationTokenExpiredException("Verification token has expired");
+            if (user.isVerified()) {
+                return "Email already confirmed";
+            }
+            userService.updateUserVerificationStatus(user, true);
+
+            tokenLifecycleService.invalidateToken(tokenEntity);
+        } catch (TokenNotFoundException e) {
+            throw TokenExceptionMapper
+                    .mapNotFound(TokenType.VERIFICATION, "Verification token not found");
+        } catch (TokenExpiredException e) {
+            throw TokenExceptionMapper
+                    .mapExpired(TokenType.VERIFICATION, "Verification token has expired");
         }
-
-        UserEntity user = userService.findUserByEmail(verificationToken.getEmail())
-                .orElseThrow(() -> new UserNotFoundException("User not found for this token"));
-
-        if (user.isVerified()) {
-            return "Email already confirmed";
-        }
-        userService.updateUserVerificationStatus(user, true);
-
-        tokenRepository.delete(verificationToken);
 
         return "Email confirmed successfully. You can now log in";
     }
 
     public void sendVerificationToken(String email) {
-        TokenEntity verificationToken = generateVerificationToken(email);
+        TokenEntity verificationToken = tokenLifecycleService
+                .createToken(email, TokenType.VERIFICATION, Duration.ofHours(1));
+
         emailService.sendConfirmationEmail(email, verificationToken.getToken());
     }
-
-    private TokenEntity generateVerificationToken(String email) {
-        String token = UUID.randomUUID().toString();
-        LocalDateTime expiresAt = LocalDateTime.now().plusHours(1);
-        tokenRepository.deleteByEmailAndTokenType(email, TokenType.VERIFICATION);
-        TokenEntity newToken = TokenEntity.builder()
-                .email(email)
-                .tokenType(TokenType.VERIFICATION)
-                .expiresAt(expiresAt)
-                .token(token)
-                .build();
-
-        return tokenRepository.save(newToken);
-    }
-
 }

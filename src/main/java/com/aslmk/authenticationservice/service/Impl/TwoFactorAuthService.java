@@ -3,64 +3,47 @@ package com.aslmk.authenticationservice.service.Impl;
 import com.aslmk.authenticationservice.entity.TokenEntity;
 import com.aslmk.authenticationservice.entity.TokenType;
 import com.aslmk.authenticationservice.exception.BadRequestException;
-import com.aslmk.authenticationservice.exception.TwoFactorTokenExpiredException;
-import com.aslmk.authenticationservice.exception.TwoFactorTokenNotFoundException;
-import com.aslmk.authenticationservice.repository.TokenRepository;
+import com.aslmk.authenticationservice.exception.TokenExceptionMapper;
+import com.aslmk.authenticationservice.exception.TokenExpiredException;
+import com.aslmk.authenticationservice.exception.TokenNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.Random;
+import java.time.Duration;
 
 @Service
 public class TwoFactorAuthService {
-    private final TokenRepository tokenRepository;
     private final EmailService emailService;
+    private final TokenLifecycleService tokenLifecycleService;
 
-    public TwoFactorAuthService(TokenRepository tokenRepository, EmailService emailService) {
-        this.tokenRepository = tokenRepository;
+
+    public TwoFactorAuthService(EmailService emailService, TokenLifecycleService tokenLifecycleService) {
         this.emailService = emailService;
+        this.tokenLifecycleService = tokenLifecycleService;
     }
 
     public void validateTwoFactorToken(String email, String code) {
-        TokenEntity twoFactorToken = tokenRepository.findByEmailAndTokenType(email, TokenType.TWO_FACTOR)
-                .orElseThrow(() -> new TwoFactorTokenNotFoundException("Two factor token not found"));
+        try {
+            TokenEntity tokenEntity = tokenLifecycleService
+                    .validateAndReturnTokenByEmail(email, TokenType.TWO_FACTOR);
 
-        boolean isTokenExpired = twoFactorToken.getExpiresAt().isBefore(LocalDateTime.now());
+            if (!tokenEntity.getToken().equals(code)) {
+                throw new BadRequestException("Two factor token is not valid");
+            }
 
-        if (isTokenExpired) {
-            throw new TwoFactorTokenExpiredException("Two factor token has expired");
+            tokenLifecycleService.invalidateToken(tokenEntity);
+        } catch (TokenNotFoundException e) {
+            throw TokenExceptionMapper
+                    .mapNotFound(TokenType.TWO_FACTOR, "Two factor token not found");
+        } catch (TokenExpiredException e) {
+            throw TokenExceptionMapper
+                    .mapExpired(TokenType.TWO_FACTOR, "Two factor token expired");
         }
-
-        if (!twoFactorToken.getToken().equals(code)) {
-            throw new BadRequestException("Two factor token is not valid");
-        }
-
-        tokenRepository.delete(twoFactorToken);
-
     }
 
     public String sendTwoFactorToken(String email) {
-        TokenEntity twoFactorToken = generateTwoFactorToken(email);
+        TokenEntity twoFactorToken = tokenLifecycleService
+                .createToken(email, TokenType.TWO_FACTOR, Duration.ofMinutes(15));
         emailService.sendTwoFactorAuthenticationTokenEmail(twoFactorToken.getEmail(), twoFactorToken.getToken());
         return "Two factor token was sent to your email";
-    }
-
-    private TokenEntity generateTwoFactorToken(String email) {
-        Random random = new Random();
-        int code = 100000 + random.nextInt(900000);
-        String token = String.valueOf(code);
-
-        LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(15);
-
-        tokenRepository.deleteByEmailAndTokenType(email, TokenType.TWO_FACTOR);
-
-        TokenEntity newToken = TokenEntity.builder()
-                .email(email)
-                .tokenType(TokenType.TWO_FACTOR)
-                .expiresAt(expiresAt)
-                .token(token)
-                .build();
-
-        return tokenRepository.save(newToken);
     }
 }
