@@ -21,7 +21,7 @@ public class PasswordRecoveryController {
     }
 
     @ValidateRecaptcha
-    @PostMapping("/new-password")
+    @PostMapping("password-recovery/new")
     public ResponseEntity<?> newPassword(@RequestParam("newPassword") String newPassword,
             @RequestParam("token") String token) {
         String message = passwordRecoveryService.newPassword(newPassword, token);
@@ -29,7 +29,7 @@ public class PasswordRecoveryController {
     }
 
     @ValidateRecaptcha
-    @PostMapping("/reset-password")
+    @PostMapping("password-recovery/reset")
     public ResponseEntity<?> resetPassword(@RequestParam("email") String email) {
         String message = passwordRecoveryService.reset(email);
         return ResponseEntity.ok(Map.of("message", message));
