@@ -6,45 +6,34 @@ import com.aslmk.authenticationservice.dto.RegistrationRequestDto;
 import com.aslmk.authenticationservice.dto.UserResponseDto;
 import com.aslmk.authenticationservice.entity.AuthMethod;
 import com.aslmk.authenticationservice.entity.UserEntity;
-import com.aslmk.authenticationservice.exception.AuthenticationFailedException;
 import com.aslmk.authenticationservice.exception.BadRequestException;
 import com.aslmk.authenticationservice.exception.UserNotFoundException;
 import com.aslmk.authenticationservice.mapper.UserResponseDtoMapper;
 import com.aslmk.authenticationservice.service.AuthService;
 import com.aslmk.authenticationservice.service.UserService;
+import com.aslmk.authenticationservice.util.SecurityContextUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextHolderStrategy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class AuthServiceImpl implements AuthService {
 
     private final UserResponseDtoMapper userResponseDtoMapper;
-    private final AuthenticationManager authenticationManager;
     private final UserService userService;
-    private final SecurityContextRepository securityContextRepository;
-    private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
+    private final SecurityContextUtil securityContextUtil;
     private final EmailConfirmationService emailConfirmationService;
     private final TwoFactorAuthService twoFactorAuthService;
 
-    public AuthServiceImpl(UserResponseDtoMapper userResponseDtoMapper, AuthenticationManager authenticationManager, UserService userService, SecurityContextRepository securityContextRepository, EmailConfirmationService emailConfirmationService, TwoFactorAuthService twoFactorAuthService) {
+    public AuthServiceImpl(UserResponseDtoMapper userResponseDtoMapper,
+                           UserService userService,
+                           SecurityContextUtil securityContextUtil,
+                           EmailConfirmationService emailConfirmationService,
+                           TwoFactorAuthService twoFactorAuthService) {
         this.userResponseDtoMapper = userResponseDtoMapper;
-        this.authenticationManager = authenticationManager;
         this.userService = userService;
-        this.securityContextRepository = securityContextRepository;
+        this.securityContextUtil = securityContextUtil;
         this.emailConfirmationService = emailConfirmationService;
         this.twoFactorAuthService = twoFactorAuthService;
     }
@@ -86,18 +75,8 @@ public class AuthServiceImpl implements AuthService {
             }
         }
 
-        UsernamePasswordAuthenticationToken authenticationToken = UsernamePasswordAuthenticationToken
-                .unauthenticated(loginRequestDto.getEmail(), loginRequestDto.getPassword());
-
-        try {
-            Authentication authentication = authenticationManager.authenticate(authenticationToken);
-
-            saveSecurityContext(authentication, httpRequest, httpResponse);
-
-            return "Login successful";
-        } catch (BadCredentialsException e) {
-            throw new AuthenticationFailedException("Email or password is incorrect");
-        }
+        securityContextUtil.authenticate(loginRequestDto, httpRequest, httpResponse);
+        return "Login successful";
     }
 
     public UserResponseDto authenticateOAuthUser(OAuthUserDto login,
@@ -107,13 +86,7 @@ public class AuthServiceImpl implements AuthService {
                 () -> new UserNotFoundException("User " + login.getEmail() + " not found")
         );
 
-        User userDetails = new User(userEntity.getEmail(),
-                "",
-                List.of(new SimpleGrantedAuthority(userEntity.getRole().getRoleName())));
-
-        UsernamePasswordAuthenticationToken authentication = UsernamePasswordAuthenticationToken
-                .authenticated(userDetails, "", userDetails.getAuthorities());
-        saveSecurityContext(authentication, httpRequest, httpResponse);
+        securityContextUtil.authenticateOAuth(userEntity, httpRequest, httpResponse);
 
         return buildUserResponse(userEntity);
     }
@@ -124,7 +97,7 @@ public class AuthServiceImpl implements AuthService {
         if (session != null) {
             session.invalidate();
         }
-        securityContextHolderStrategy.clearContext();
+        securityContextUtil.clear();
     }
 
     private UserResponseDto buildUserResponse(UserEntity userEntity) {
@@ -132,11 +105,5 @@ public class AuthServiceImpl implements AuthService {
         dto.setRole(userEntity.getRole().getRoleName());
         dto.setAccounts(userEntity.getAccounts());
         return dto;
-    }
-    private void saveSecurityContext(Authentication authentication, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
-        SecurityContext context = securityContextHolderStrategy.createEmptyContext();
-        context.setAuthentication(authentication);
-        securityContextHolderStrategy.setContext(context);
-        securityContextRepository.saveContext(context, httpRequest, httpResponse);
     }
 }
