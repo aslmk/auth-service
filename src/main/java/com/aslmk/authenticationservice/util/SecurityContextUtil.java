@@ -33,7 +33,7 @@ public class SecurityContextUtil {
     public void authenticateOAuth(UserEntity userEntity, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
         User userDetails = new User(userEntity.getEmail(),
                 "",
-                List.of(new SimpleGrantedAuthority(userEntity.getRole().getRoleName())));
+                List.of(new SimpleGrantedAuthority("ROLE_" + userEntity.getRole().getRoleName())));
 
         UsernamePasswordAuthenticationToken authentication = UsernamePasswordAuthenticationToken
                 .authenticated(userDetails, "", userDetails.getAuthorities());
