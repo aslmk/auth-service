@@ -52,19 +52,13 @@ Use it as a reference for educational exploration or further development at your
    
 2. Configure environment variables (e.g. database, mail service) in `.env` and `application.properties`.
 
-3. Start PostgreSQL using Docker:
+3. Start the application using Docker:
 
    ```bash
    docker-compose up -d
    ```
 
-4. Run the application:
-
-   ```bash
-   mvn spring-boot:run
-   ```
-
-5. Once the application is running, the API will be available at:
+5. Once all containers are running, the API will be available at:
 
    ```
    http://localhost:8080
