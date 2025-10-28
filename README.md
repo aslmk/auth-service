@@ -58,7 +58,7 @@ Use it as a reference for educational exploration or further development at your
    docker-compose up -d
    ```
 
-5. Once all containers are running, the API will be available at:
+4. Once all containers are running, the API will be available at:
 
    ```
    http://localhost:8080
