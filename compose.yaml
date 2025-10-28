@@ -1,5 +1,6 @@
 services:
   postgres:
+    container_name: postgres
     image: 'postgres:latest'
     environment:
       - 'POSTGRES_DB=${DB_NAME}'
@@ -7,3 +8,19 @@ services:
       - 'POSTGRES_USER=${DB_USER}'
     ports:
       - '5433:5432'
+    networks:
+      - app-db-network
+
+  auth-service:
+    container_name: auth-app
+    build: .
+    ports:
+      - '8080:8080'
+    depends_on:
+      - postgres
+    networks:
+      - app-db-network
+    env_file:
+      - .env
+networks:
+  app-db-network:
