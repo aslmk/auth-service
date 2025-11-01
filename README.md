@@ -64,6 +64,11 @@ Use it as a reference for educational exploration or further development at your
    http://localhost:8080
    ```
 
+## API Documentation
+
+Available at http://localhost:8080/swagger-ui/index.html
+(OpenAPI generated automatically via `springdoc-openapi`)
+
 ## Contributing
 
 Contributions and suggestions are welcome.
