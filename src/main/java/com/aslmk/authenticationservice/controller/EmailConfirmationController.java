@@ -74,8 +74,7 @@ public class EmailConfirmationController {
                                                                 "timestamp": "2025-10-29T11:18",
                                                                 "status": 404,
                                                                 "error": "Not Found",
-                                                                "message": "Verification token not found",
-                                                                "errors": []
+                                                                "message": "Verification token not found"
                                                             }
                                                             """
                                             ),
@@ -87,8 +86,7 @@ public class EmailConfirmationController {
                                                                 "timestamp": "2025-10-29T11:18",
                                                                 "status": 404,
                                                                 "error": "Not Found",
-                                                                "message": "User not found for this token",
-                                                                "errors": []
+                                                                "message": "User not found for this token"
                                                             }
                                                             """
                                             )
@@ -105,8 +103,7 @@ public class EmailConfirmationController {
                                                 "timestamp": "2025-10-29T11:18",
                                                 "status": 400,
                                                 "error": "Bad Request",
-                                                "message": "Verification token has expired",
-                                                "errors": []
+                                                "message": "Verification token has expired"
                                             }
                                             """)
                             )

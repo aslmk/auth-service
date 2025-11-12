@@ -66,7 +66,7 @@ public class AuthController {
                                               "status": 400,
                                               "error": "Bad Request",
                                               "message": "Validation failed",
-                                              "errors": [
+                                              "details": [
                                                 {
                                                   "field": "password",
                                                   "message": "Password is required"
@@ -110,8 +110,7 @@ public class AuthController {
                                                               "timestamp": "2025-10-29T11:18",
                                                               "status": 409,
                                                               "error": "Conflict",
-                                                              "message": "User with username \\"example_username\\" already exists",
-                                                              "errors": []
+                                                              "message": "User with username \\"example_username\\" already exists"
                                                             }
                                                             """
                                             ),
@@ -123,8 +122,7 @@ public class AuthController {
                                                               "timestamp": "2025-10-29T11:18",
                                                               "status": 409,
                                                               "error": "Conflict",
-                                                              "message": "User with email \\"example@example.com\\" already exists",
-                                                              "errors": []
+                                                              "message": "User with email \\"example@example.com\\" already exists"
                                                             }
                                                             """
                                             )
@@ -199,8 +197,7 @@ public class AuthController {
                                                               "timestamp": "2025-10-29T11:18",
                                                               "status": 404,
                                                               "error": "Not Found",
-                                                              "message": "User example@example.com not found",
-                                                              "errors": []
+                                                              "message": "User example@example.com not found"
                                                             }
                                                             """
                                             ),
@@ -212,8 +209,7 @@ public class AuthController {
                                                               "timestamp": "2025-10-29T11:18",
                                                               "status": 404,
                                                               "error": "Not Found",
-                                                              "message": "Two factor token not found",
-                                                              "errors": []
+                                                              "message": "Two factor token not found"
                                                             }
                                                             """
                                             )
@@ -230,8 +226,7 @@ public class AuthController {
                                               "timestamp": "2025-10-29T11:18",
                                               "status": 403,
                                               "error": "Bad request",
-                                              "message": "Email or password is incorrect",
-                                              "errors": []
+                                              "message": "Email or password is incorrect"
                                             }
                                             """)
                             )
@@ -250,8 +245,7 @@ public class AuthController {
                                                               "timestamp": "2025-10-29T11:18",
                                                               "status": 400,
                                                               "error": "Bad request",
-                                                              "message": "Two factor token expired",
-                                                              "errors": []
+                                                              "message": "Two factor token expired"
                                                             }
                                                             """
                                             ),
@@ -263,8 +257,7 @@ public class AuthController {
                                                               "timestamp": "2025-10-29T11:18",
                                                               "status": 400,
                                                               "error": "Bad request",
-                                                              "message": "Two factor token is not valid",
-                                                              "errors": []
+                                                              "message": "Two factor token is not valid"
                                                             }
                                                             """
                                             ),
@@ -276,8 +269,7 @@ public class AuthController {
                                                               "timestamp": "2025-10-29T11:18",
                                                               "status": 400,
                                                               "error": "Bad request",
-                                                              "message": "Email not verified. Check your inbox for a verification token",
-                                                              "errors": []
+                                                              "message": "Email not verified. Check your inbox for a verification token"
                                                             }
                                                             """
                                             ),
@@ -290,7 +282,7 @@ public class AuthController {
                                                               "status": 400,
                                                               "error": "Bad Request",
                                                               "message": "Validation failed",
-                                                              "errors": [
+                                                              "details": [
                                                                 {
                                                                   "field": "password",
                                                                   "message": "Password is required"

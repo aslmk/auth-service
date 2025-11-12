@@ -62,8 +62,7 @@ public class PasswordRecoveryController {
                                                             "timestamp": "2025-10-29T11:18",
                                                             "status": 404,
                                                             "error": "Not Found",
-                                                            "message": "Password reset token not found",
-                                                            "errors": []
+                                                            "message": "Password reset token not found"
                                                             }
                                                             """
                                             ),
@@ -75,8 +74,7 @@ public class PasswordRecoveryController {
                                                               "timestamp": "2025-10-29T11:18",
                                                               "status": 404,
                                                               "error": "Not Found",
-                                                              "message": "User not found for this token",
-                                                              "errors": []
+                                                              "message": "User not found for this token"
                                                             }
                                                             """
                                             ),
@@ -95,8 +93,7 @@ public class PasswordRecoveryController {
                                                              "timestamp": "2025-10-29T11:18",
                                                              "status": 400,
                                                              "error": "Bad Request",
-                                                             "message": "Password reset token has expired",
-                                                             "errors": []
+                                                             "message": "Password reset token has expired"
                                                         }
                                                     """
                                     )
@@ -141,8 +138,7 @@ public class PasswordRecoveryController {
                                               "timestamp": "2025-10-29T11:18",
                                               "status": 404,
                                               "error": "Not Found",
-                                              "message": "User with email example@example.com not found",
-                                              "errors": []
+                                              "message": "User with email example@example.com not found"
                                             }
                                             """
                                     )
