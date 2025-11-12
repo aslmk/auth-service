@@ -61,8 +61,7 @@ public class OAuthController {
                                             "timestamp": "2025-10-29T11:18",
                                             "status": 404,
                                             "error": "Not Found",
-                                            "message": "No such provider: provider_name",
-                                            "errors": []
+                                            "message": "No such provider: provider_name"
                                             }
                                             """
                                     )
@@ -102,8 +101,7 @@ public class OAuthController {
                                                             "timestamp": "2025-10-29T11:18",
                                                             "status": 404,
                                                             "error": "Not Found",
-                                                            "message": "No such provider: provider_name",
-                                                            "errors": []
+                                                            "message": "No such provider: provider_name"
                                                             }
                                                             """
                                             ),
@@ -115,9 +113,7 @@ public class OAuthController {
                                                               "timestamp": "2025-10-29T11:18",
                                                               "status": 404,
                                                               "error": "Not Found",
-                                                              "message": "User example@example.com not found",
-                                                              "errors": []
-                                                            }
+                                                              "message": "User example@example.com not found"                                                            }
                                                             """
                                             ),
 
@@ -135,8 +131,7 @@ public class OAuthController {
                                                      "timestamp": "2025-10-29T11:18",
                                                      "status": 400,
                                                      "error": "Bad Request",
-                                                     "message": "Invalid code",
-                                                     "errors": []
+                                                     "message": "Invalid code"
                                                 }
                                             """
                                     )
