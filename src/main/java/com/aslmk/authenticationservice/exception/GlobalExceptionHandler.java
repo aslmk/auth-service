@@ -236,6 +236,20 @@ public class GlobalExceptionHandler {
                 status);
     }
 
+    @ExceptionHandler(ServiceException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<ErrorResponse> handleServiceException(ServiceException ex) {
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+
+        return new ResponseEntity<>(
+                buildErrorResponse(
+                        ex.getMessage(),
+                        status.value(),
+                        status.getReasonPhrase()
+                ),
+                status);
+    }
+
     private ErrorResponse buildErrorResponse(String message, int status, String error) {
         return ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())

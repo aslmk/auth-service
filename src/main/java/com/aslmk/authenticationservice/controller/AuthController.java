@@ -128,8 +128,52 @@ public class AuthController {
                                             )
                                     }
                             )
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "Unable to save user due to the database error",
+                            content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "Undefined database constraint violation",
+                                            description = "Returned when database constraint violation is undefined",
+                                            value = """
+                                                            {
+                                                              "timestamp": "2025-10-29T11:18",
+                                                              "status": 500,
+                                                              "error": "Internal Server Error",
+                                                              "message": "Unknown database constraint violation"
+                                                            }
+                                                            """
+                                    ),
+                                    @ExampleObject(
+                                            name = "Database constraint violation",
+                                            description = "Returned when database constraint violation occurred",
+                                            value = """
+                                                            {
+                                                              "timestamp": "2025-10-29T11:18",
+                                                              "status": 500,
+                                                              "error": "Internal Server Error",
+                                                              "message": "Database constraint violation: <constraint_name>"
+                                                            }
+                                                            """
+                                    ),
+                                    @ExampleObject(
+                                            name = "Unexpected error occurred while saving user",
+                                            description = "Returned when saving user",
+                                            value = """
+                                                            {
+                                                              "timestamp": "2025-10-29T11:18",
+                                                              "status": 500,
+                                                              "error": "Internal Server Error",
+                                                              "message": "Unexpected error occurred while saving user"
+                                                            }
+                                                            """
+                                    )
+                            }
                     )
-
+                    )
             }
     )
     @ValidateRecaptcha

@@ -136,6 +136,23 @@ public class OAuthController {
                                             """
                                     )
                             )
+                    ),
+                    @ApiResponse(
+                            responseCode = "500",
+                            description = "User role not found",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(example =
+                                            """
+                                                {
+                                                     "timestamp": "2025-10-29T11:18",
+                                                     "status": 500,
+                                                     "error": "Internal Server Error",
+                                                     "message": "Default user role not found"
+                                                }
+                                            """
+                                    )
+                            )
                     )
             }
     )
