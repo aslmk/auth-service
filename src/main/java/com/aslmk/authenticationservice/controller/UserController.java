@@ -2,6 +2,7 @@ package com.aslmk.authenticationservice.controller;
 
 import com.aslmk.authenticationservice.dto.UserProfileDto;
 import com.aslmk.authenticationservice.entity.UserEntity;
+import com.aslmk.authenticationservice.exception.UserNotFoundException;
 import com.aslmk.authenticationservice.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -41,13 +42,31 @@ public class UserController {
                                     mediaType = "application/json",
                                     schema = @Schema(implementation = UserProfileDto.class)
                             )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "User profile not found",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(example = """
+                                            {
+                                                "timestamp": "2025-10-29T11:18",
+                                                "status": 404,
+                                                "error": "Not Found",
+                                                "message": "User not found for 'example@gmail.com'"
+                                            }
+                                            """)
+                            )
                     )
             }
     )
     @GetMapping("/profile")
     public ResponseEntity<UserProfileDto> profile(Authentication authentication) {
         String username = authentication.getName();
-        UserEntity user = userService.findUserByEmail(username).orElseThrow();
+        UserEntity user = userService.findUserByEmail(username)
+                .orElseThrow(() -> new UserNotFoundException(
+                        String.format("User not found for '%s'", username))
+                );
 
         UserProfileDto userProfile = mapToUserProfileDto(user);
 
