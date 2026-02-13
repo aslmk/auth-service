@@ -16,9 +16,6 @@ import com.aslmk.authenticationservice.service.UserService;
 import jakarta.transaction.Transactional;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -138,18 +135,5 @@ public class UserServiceImpl implements UserService {
                 .role(userRole)
                 .build();
         return userRepository.save(userEntity);
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        UserEntity userEntity = findUserByEmail(email).orElseThrow(
-                () -> new UsernameNotFoundException(String.format("User with email \"%s\" not found", email))
-        );
-        return User.builder()
-                .username(userEntity.getEmail())
-                .password(userEntity.getPassword())
-                .roles(userEntity.getRole().getRoleName())
-                .build();
-
     }
 }

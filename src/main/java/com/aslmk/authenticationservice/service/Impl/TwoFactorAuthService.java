@@ -40,10 +40,9 @@ public class TwoFactorAuthService {
         }
     }
 
-    public String sendTwoFactorToken(String email) {
+    public void sendTwoFactorToken(String email) {
         TokenEntity twoFactorToken = tokenLifecycleService
                 .createToken(email, TokenType.TWO_FACTOR, Duration.ofMinutes(15));
         emailService.sendTwoFactorAuthenticationTokenEmail(twoFactorToken.getEmail(), twoFactorToken.getToken());
-        return "Two factor token was sent to your email";
     }
 }

@@ -1,5 +1,7 @@
 package com.aslmk.authenticationservice.service.Impl;
 
+import com.aslmk.authenticationservice.account.action.AccountActionResult;
+import com.aslmk.authenticationservice.account.action.AccountActionType;
 import com.aslmk.authenticationservice.entity.TokenEntity;
 import com.aslmk.authenticationservice.entity.TokenType;
 import com.aslmk.authenticationservice.entity.UserEntity;
@@ -24,7 +26,7 @@ public class EmailConfirmationService {
         this.tokenLifecycleService = tokenLifecycleService;
     }
 
-    public String confirmEmail(String token) {
+    public AccountActionResult confirmEmail(String token) {
         try {
             TokenEntity tokenEntity = tokenLifecycleService
                     .validateAndReturnTokenByValue(token, TokenType.VERIFICATION);
@@ -33,7 +35,7 @@ public class EmailConfirmationService {
                     .orElseThrow(() -> new UserNotFoundException("User not found for this token"));
 
             if (user.isVerified()) {
-                return "Email already confirmed";
+                return new AccountActionResult(AccountActionType.EMAIL_ALREADY_CONFIRMED);
             }
             userService.updateUserVerificationStatus(user, true);
 
@@ -46,7 +48,7 @@ public class EmailConfirmationService {
                     .mapExpired(TokenType.VERIFICATION, "Verification token has expired");
         }
 
-        return "Email confirmed successfully. You can now log in";
+        return new AccountActionResult(AccountActionType.EMAIL_CONFIRMED);
     }
 
     public void sendVerificationToken(String email) {

@@ -1,7 +1,7 @@
 # Auth-Service
 
-Auth-Service is an **educational project** built to explore and understand how modern authentication and authorization systems work in practice.  
-It demonstrates the implementation of core security features such as **session-based authentication**, **OAuth2 integration (Google)**, **two-factor authentication**, **email verification**, **password recovery**, and **ReCaptcha** — all implemented manually (without third-party auth libraries) using Spring Boot.
+Auth-Service is an **educational project** built to explore and understand how modern authentication and authorization systems works internally.
+It demonstrates the implementation of core security features such as **session-based authentication**, **OAuth2 integration (Google)**, **two-factor authentication**, **email verification**, **password recovery**, and **ReCaptcha**. All implemented manually using Spring Boot.
 
 ## ⚠️ Disclaimer
 
@@ -11,11 +11,11 @@ Use it as a reference for educational exploration or further development at your
 
 ## 🌟 Features
 
-- Session-based authentication
+- Session-based authentication (without Spring Security)
 - Manual OAuth2 login via Google
 - Two-factor authentication (email codes)
-- Email verification
-- Password recovery
+- Email confirmation flow
+- Password recovery mechanism
 - Role-based access control
 - ReCaptcha validation during registration
 - User profile management
@@ -25,7 +25,7 @@ Use it as a reference for educational exploration or further development at your
 
 - **Java 17**  
 - **Spring Boot 3.4.4**
-  - Spring Security (manual session handling)
+  - Spring Security Crypto
   - Spring Data JPA  
   - Spring Web  
   - Spring Validation  
@@ -33,7 +33,7 @@ Use it as a reference for educational exploration or further development at your
 - **PostgreSQL**, **Flyway**
 - **Maven**
 - **JUnit 5**, **Mockito**, **Testcontainers**, **H2-database**
-- **Docker** & **Docker Compose**, **Lombok**, **MapStruct**
+- **Docker** & **Docker Compose**, **Lombok**
 
 ## 🚀 Quick Start
 
