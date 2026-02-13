@@ -1,71 +1,35 @@
 package com.aslmk.authenticationservice.controller;
 
+import com.aslmk.authenticationservice.security.UserContext;
 import com.aslmk.authenticationservice.dto.UserProfileDto;
+import com.aslmk.authenticationservice.auth.result.AuthenticatedUser;
 import com.aslmk.authenticationservice.entity.UserEntity;
 import com.aslmk.authenticationservice.exception.UserNotFoundException;
 import com.aslmk.authenticationservice.service.UserService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(
-        name = "User profile",
-        description = "Endpoints for retrieving and managing user profile information"
-)
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
+    private final UserContext userContext;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserContext userContext) {
         this.userService = userService;
+        this.userContext = userContext;
     }
 
-    @Operation(
-            summary = "Get authenticated user's profile",
-            description = """
-                    Returns detailed information about the currently authenticated user.
-                    """,
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "User profile retrieved successfully",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = UserProfileDto.class)
-                            )
-                    ),
-                    @ApiResponse(
-                            responseCode = "404",
-                            description = "User profile not found",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(example = """
-                                            {
-                                                "timestamp": "2025-10-29T11:18",
-                                                "status": 404,
-                                                "error": "Not Found",
-                                                "message": "User not found for 'example@gmail.com'"
-                                            }
-                                            """)
-                            )
-                    )
-            }
-    )
     @GetMapping("/profile")
-    public ResponseEntity<UserProfileDto> profile(Authentication authentication) {
-        String username = authentication.getName();
-        UserEntity user = userService.findUserByEmail(username)
+    public ResponseEntity<UserProfileDto> profile() {
+        AuthenticatedUser authUser = userContext.getUser();
+
+        UserEntity user = userService.findUserByEmail(authUser.email())
                 .orElseThrow(() -> new UserNotFoundException(
-                        String.format("User not found for '%s'", username))
+                        String.format("User not found for '%s'", authUser.email()))
                 );
 
         UserProfileDto userProfile = mapToUserProfileDto(user);

@@ -77,9 +77,37 @@ public class GlobalExceptionHandler {
                 status);
     }
 
+    @ExceptionHandler(UsernameNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<ErrorResponse> handleUserNotFound(UsernameNotFoundException ex) {
+        HttpStatus status = HttpStatus.NOT_FOUND;
+
+        return new ResponseEntity<>(
+                buildErrorResponse(
+                        ex.getMessage(),
+                        status.value(),
+                        status.getReasonPhrase()
+                ),
+                status);
+    }
+
     @ExceptionHandler(AuthenticationFailedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ResponseEntity<ErrorResponse> handleAuthenticationFailed(AuthenticationFailedException ex) {
+        HttpStatus status = HttpStatus.FORBIDDEN;
+
+        return new ResponseEntity<>(
+                buildErrorResponse(
+                        ex.getMessage(),
+                        status.value(),
+                        status.getReasonPhrase()
+                ),
+                status);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
         HttpStatus status = HttpStatus.FORBIDDEN;
 
         return new ResponseEntity<>(

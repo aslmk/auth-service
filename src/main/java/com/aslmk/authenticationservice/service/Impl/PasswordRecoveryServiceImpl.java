@@ -1,5 +1,7 @@
 package com.aslmk.authenticationservice.service.Impl;
 
+import com.aslmk.authenticationservice.account.action.AccountActionResult;
+import com.aslmk.authenticationservice.account.action.AccountActionType;
 import com.aslmk.authenticationservice.entity.TokenEntity;
 import com.aslmk.authenticationservice.entity.TokenType;
 import com.aslmk.authenticationservice.entity.UserEntity;
@@ -27,7 +29,7 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService {
     }
 
     @Override
-    public String reset(String email) {
+    public AccountActionResult reset(String email) {
         UserEntity user = userService.findUserByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User with email " + email + " not found"));
 
@@ -36,11 +38,11 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService {
 
         emailService.sendPasswordResetEmail(resetToken.getEmail(), resetToken.getToken());
 
-        return "Password reset token was successfully sent to your email";
+        return new AccountActionResult(AccountActionType.PASSWORD_RESET_EMAIL_SENT);
     }
 
     @Override
-    public String newPassword(String newPassword, String token) {
+    public AccountActionResult newPassword(String newPassword, String token) {
         try {
             TokenEntity tokenEntity = tokenLifecycleService
                     .validateAndReturnTokenByValue(token, TokenType.PASSWORD_RESET);
@@ -59,6 +61,6 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService {
                     .mapExpired(TokenType.PASSWORD_RESET, "Password reset token has expired");
         }
 
-        return "Password was successfully changed";
+        return new AccountActionResult(AccountActionType.PASSWORD_UPDATED);
     }
 }
