@@ -91,20 +91,6 @@ public class GlobalExceptionHandler {
                 status);
     }
 
-    @ExceptionHandler(AuthenticationFailedException.class)
-    @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ResponseEntity<ErrorResponse> handleAuthenticationFailed(AuthenticationFailedException ex) {
-        HttpStatus status = HttpStatus.FORBIDDEN;
-
-        return new ResponseEntity<>(
-                buildErrorResponse(
-                        ex.getMessage(),
-                        status.value(),
-                        status.getReasonPhrase()
-                ),
-                status);
-    }
-
     @ExceptionHandler(BadCredentialsException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
