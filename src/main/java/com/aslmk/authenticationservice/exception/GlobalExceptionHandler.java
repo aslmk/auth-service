@@ -1,7 +1,6 @@
 package com.aslmk.authenticationservice.exception;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -16,7 +15,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
+    public ErrorResponse handleValidationErrors(MethodArgumentNotValidException ex) {
         List<Map<String, String>> errors = ex.getBindingResult().getFieldErrors()
                 .stream()
                 .filter(m -> m.getDefaultMessage() != null)
@@ -26,242 +25,127 @@ public class GlobalExceptionHandler {
                 )).toList();
         HttpStatus status = HttpStatus.BAD_REQUEST;
 
-        return new ResponseEntity<>(
-                buildErrorResponse(
-                        "Validation failed",
-                        status.value(),
-                        status.getReasonPhrase(),
-                        errors
-                ),
-                status);
+        return buildErrorResponse("Validation failed",
+                status.value(), status.getReasonPhrase(), errors);
     }
 
     @ExceptionHandler(UsernameAlreadyExistsException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ResponseEntity<ErrorResponse> handleUsernameExists(UsernameAlreadyExistsException ex) {
+    public ErrorResponse handleUsernameExists(UsernameAlreadyExistsException ex) {
         HttpStatus status = HttpStatus.CONFLICT;
-
-        return new ResponseEntity<>(
-                buildErrorResponse(
-                        ex.getMessage(),
-                        status.value(),
-                        status.getReasonPhrase()
-                ),
-                status);
+        return buildErrorResponse(ex.getMessage(), status.value(), status.getReasonPhrase());
     }
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ResponseEntity<ErrorResponse> handleEmailExists(EmailAlreadyExistsException ex) {
+    public ErrorResponse handleEmailExists(EmailAlreadyExistsException ex) {
         HttpStatus status = HttpStatus.CONFLICT;
-
-        return new ResponseEntity<>(
-                buildErrorResponse(
-                        ex.getMessage(),
-                        status.value(),
-                        status.getReasonPhrase()
-                ),
-                status);    }
+        return buildErrorResponse(ex.getMessage(), status.value(), status.getReasonPhrase());
+    }
 
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
+    public ErrorResponse handleUserNotFound(UserNotFoundException ex) {
         HttpStatus status = HttpStatus.NOT_FOUND;
-
-        return new ResponseEntity<>(
-                buildErrorResponse(
-                        ex.getMessage(),
-                        status.value(),
-                        status.getReasonPhrase()
-                ),
-                status);
+        return buildErrorResponse(ex.getMessage(), status.value(), status.getReasonPhrase());
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<ErrorResponse> handleUserNotFound(UsernameNotFoundException ex) {
+    public ErrorResponse handleUserNotFound(UsernameNotFoundException ex) {
         HttpStatus status = HttpStatus.NOT_FOUND;
-
-        return new ResponseEntity<>(
-                buildErrorResponse(
-                        ex.getMessage(),
-                        status.value(),
-                        status.getReasonPhrase()
-                ),
-                status);
+        return buildErrorResponse(ex.getMessage(), status.value(), status.getReasonPhrase());
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
+    public ErrorResponse handleBadCredentials(BadCredentialsException ex) {
         HttpStatus status = HttpStatus.FORBIDDEN;
-
-        return new ResponseEntity<>(
-                buildErrorResponse(
-                        ex.getMessage(),
-                        status.value(),
-                        status.getReasonPhrase()
-                ),
-                status);
+        return buildErrorResponse(ex.getMessage(), status.value(), status.getReasonPhrase());
     }
 
     @ExceptionHandler(RecaptchaValidationFailedException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleRecaptchaValidationFailed(RecaptchaValidationFailedException ex) {
+    public ErrorResponse handleRecaptchaValidationFailed(RecaptchaValidationFailedException ex) {
         List<Map<String, String>> errors = ex.getErrorCodes()
                 .stream()
                 .map(error -> Map.of("error", error))
                 .toList();
 
         HttpStatus status = HttpStatus.BAD_REQUEST;
-
-        return new ResponseEntity<>(
-                buildErrorResponse(
-                        ex.getMessage(),
-                        status.value(),
-                        status.getReasonPhrase(),
-                        errors
-                ),
-                status);
+        return buildErrorResponse(ex.getMessage(), status.value(), status.getReasonPhrase(), errors);
     }
 
     @ExceptionHandler(VerificationTokenExpiredException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleVerificationTokenExpired(VerificationTokenExpiredException ex) {
+    public ErrorResponse handleVerificationTokenExpired(VerificationTokenExpiredException ex) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
 
-        return new ResponseEntity<>(
-                buildErrorResponse(
-                        ex.getMessage(),
-                        status.value(),
-                        status.getReasonPhrase()
-                ),
-                status);
+        return buildErrorResponse(ex.getMessage(), status.value(), status.getReasonPhrase());
     }
 
     @ExceptionHandler(VerificationTokenNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<ErrorResponse> handleVerificationTokenNotFound(VerificationTokenNotFoundException ex) {
+    public ErrorResponse handleVerificationTokenNotFound(VerificationTokenNotFoundException ex) {
         HttpStatus status = HttpStatus.NOT_FOUND;
-
-        return new ResponseEntity<>(
-                buildErrorResponse(
-                        ex.getMessage(),
-                        status.value(),
-                        status.getReasonPhrase()
-                ),
-                status);
+        return buildErrorResponse(ex.getMessage(), status.value(), status.getReasonPhrase());
     }
 
     @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException ex) {
+    public ErrorResponse handleBadRequest(BadRequestException ex) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
 
-        return new ResponseEntity<>(
-                buildErrorResponse(
-                        ex.getMessage(),
-                        status.value(),
-                        status.getReasonPhrase()
-                ),
-                status);
+        return buildErrorResponse(ex.getMessage(), status.value(), status.getReasonPhrase());
     }
 
     @ExceptionHandler(ProviderNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<ErrorResponse> handleProviderNotFound(ProviderNotFoundException ex) {
+    public ErrorResponse handleProviderNotFound(ProviderNotFoundException ex) {
         HttpStatus status = HttpStatus.NOT_FOUND;
-
-        return new ResponseEntity<>(
-                buildErrorResponse(
-                        ex.getMessage(),
-                        status.value(),
-                        status.getReasonPhrase()
-                ),
-                status);
+        return buildErrorResponse(ex.getMessage(), status.value(), status.getReasonPhrase());
     }
 
     @ExceptionHandler(PasswordResetTokenExpiredException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handlePasswordResetTokenExpired(PasswordResetTokenExpiredException ex) {
+    public ErrorResponse handlePasswordResetTokenExpired(PasswordResetTokenExpiredException ex) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
-
-        return new ResponseEntity<>(
-                buildErrorResponse(
-                        ex.getMessage(),
-                        status.value(),
-                        status.getReasonPhrase()
-                ),
-                status);    }
+        return buildErrorResponse(ex.getMessage(), status.value(), status.getReasonPhrase());
+    }
 
     @ExceptionHandler(PasswordResetTokenNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<ErrorResponse> handlePasswordResetTokenNotFound(PasswordResetTokenNotFoundException ex) {
+    public ErrorResponse handlePasswordResetTokenNotFound(PasswordResetTokenNotFoundException ex) {
         HttpStatus status = HttpStatus.NOT_FOUND;
-
-        return new ResponseEntity<>(
-                buildErrorResponse(
-                        ex.getMessage(),
-                        status.value(),
-                        status.getReasonPhrase()
-                ),
-                status);
+        return buildErrorResponse(ex.getMessage(), status.value(), status.getReasonPhrase());
     }
 
     @ExceptionHandler(OAuthException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ResponseEntity<ErrorResponse> handleOAuthException(OAuthException ex) {
+    public ErrorResponse handleOAuthException(OAuthException ex) {
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-
-        return new ResponseEntity<>(
-                buildErrorResponse(
-                        ex.getMessage(),
-                        status.value(),
-                        status.getReasonPhrase()
-                ),
-                status);
+        return buildErrorResponse(ex.getMessage(), status.value(), status.getReasonPhrase());
     }
 
     @ExceptionHandler(TwoFactorTokenExpiredException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorResponse> handleTwoFactorTokenExpired(TwoFactorTokenExpiredException ex) {
+    public ErrorResponse handleTwoFactorTokenExpired(TwoFactorTokenExpiredException ex) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
-
-        return new ResponseEntity<>(
-                buildErrorResponse(
-                        ex.getMessage(),
-                        status.value(),
-                        status.getReasonPhrase()
-                ),
-                status);
+        return buildErrorResponse(ex.getMessage(), status.value(), status.getReasonPhrase());
     }
 
     @ExceptionHandler(TwoFactorTokenNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<ErrorResponse> handleTwoFactorTokenNotFound(TwoFactorTokenNotFoundException ex) {
+    public ErrorResponse handleTwoFactorTokenNotFound(TwoFactorTokenNotFoundException ex) {
         HttpStatus status = HttpStatus.NOT_FOUND;
-
-        return new ResponseEntity<>(
-                buildErrorResponse(
-                        ex.getMessage(),
-                        status.value(),
-                        status.getReasonPhrase()
-                ),
-                status);
+        return buildErrorResponse(ex.getMessage(), status.value(), status.getReasonPhrase());
     }
 
     @ExceptionHandler(ServiceException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ResponseEntity<ErrorResponse> handleServiceException(ServiceException ex) {
+    public ErrorResponse handleServiceException(ServiceException ex) {
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-
-        return new ResponseEntity<>(
-                buildErrorResponse(
-                        ex.getMessage(),
-                        status.value(),
-                        status.getReasonPhrase()
-                ),
-                status);
+        return buildErrorResponse(ex.getMessage(), status.value(), status.getReasonPhrase());
     }
 
     private ErrorResponse buildErrorResponse(String message, int status, String error) {
