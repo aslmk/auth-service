@@ -5,10 +5,7 @@ import com.aslmk.authenticationservice.account.action.AccountActionType;
 import com.aslmk.authenticationservice.entity.TokenEntity;
 import com.aslmk.authenticationservice.entity.TokenType;
 import com.aslmk.authenticationservice.entity.UserEntity;
-import com.aslmk.authenticationservice.exception.TokenExceptionMapper;
-import com.aslmk.authenticationservice.exception.TokenExpiredException;
-import com.aslmk.authenticationservice.exception.TokenNotFoundException;
-import com.aslmk.authenticationservice.exception.UserNotFoundException;
+import com.aslmk.authenticationservice.exception.*;
 import com.aslmk.authenticationservice.service.UserService;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +24,9 @@ public class EmailConfirmationService {
     }
 
     public AccountActionResult confirmEmail(String token) {
+        if (token == null) throw new ParameterMissingException("'token' parameter is missing");
+        if (token.isBlank()) throw new BadRequestException("'token' parameter is blank");
+
         try {
             TokenEntity tokenEntity = tokenLifecycleService
                     .validateAndReturnTokenByValue(token, TokenType.VERIFICATION);

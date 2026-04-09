@@ -34,9 +34,6 @@ public class OAuthController {
     @GetMapping("/oauth/callback/{provider}")
     public ResponseEntity<AuthStatusResponse> callback(@PathVariable String provider,
                                       @RequestParam("code") String code) {
-        if (code == null || code.isEmpty()) {
-            throw new BadRequestException("Invalid code");
-        }
         OAuthUserDto oAuthUser = providerService.processOAuthCallback(provider, code);
 
         AuthPayload authPayload = OAuth2AuthPayload.builder()

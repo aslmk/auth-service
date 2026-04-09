@@ -3,6 +3,8 @@ package com.aslmk.authenticationservice.provider;
 import com.aslmk.authenticationservice.dto.OAuthUserDto;
 import com.aslmk.authenticationservice.entity.AccountEntity;
 import com.aslmk.authenticationservice.entity.UserEntity;
+import com.aslmk.authenticationservice.exception.BadRequestException;
+import com.aslmk.authenticationservice.exception.ParameterMissingException;
 import com.aslmk.authenticationservice.exception.ProviderNotFoundException;
 import com.aslmk.authenticationservice.service.AccountService;
 import com.aslmk.authenticationservice.service.UserService;
@@ -50,6 +52,9 @@ public class ProviderService implements OAuthService {
 
     @Override
     public OAuthUserDto processOAuthCallback(String providerName, String code) {
+        if (code == null) throw new ParameterMissingException("'code' parameter is missing");
+        if (code.isBlank()) throw new BadRequestException("'code' parameter is blank");
+
         OAuthUserInfo userInfo = fetchUserInfo(providerName, code);
 
         Optional<AccountEntity> account = accountService.findByIdAndProvider(userInfo.getId(), userInfo.getProvider());
