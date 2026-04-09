@@ -139,6 +139,13 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(ErrorCode.INTERNAL_ERROR.name(), "Internal Server Error");
     }
 
+    @ExceptionHandler(ParameterMissingException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleMissingServletRequestParameterException(ParameterMissingException ex) {
+        log.warn(ex.getMessage());
+        return buildErrorResponse(ErrorCode.PARAMETER_MISSING.name(), ex.getMessage());
+    }
+
     private ErrorResponse buildErrorResponse(String message, String error) {
         return new ErrorResponse(error, message, Instant.now().toEpochMilli(), null);
     }

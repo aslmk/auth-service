@@ -5,10 +5,7 @@ import com.aslmk.authenticationservice.account.action.AccountActionType;
 import com.aslmk.authenticationservice.entity.TokenEntity;
 import com.aslmk.authenticationservice.entity.TokenType;
 import com.aslmk.authenticationservice.entity.UserEntity;
-import com.aslmk.authenticationservice.exception.TokenExceptionMapper;
-import com.aslmk.authenticationservice.exception.TokenExpiredException;
-import com.aslmk.authenticationservice.exception.TokenNotFoundException;
-import com.aslmk.authenticationservice.exception.UserNotFoundException;
+import com.aslmk.authenticationservice.exception.*;
 import com.aslmk.authenticationservice.service.PasswordRecoveryService;
 import com.aslmk.authenticationservice.service.UserService;
 import org.springframework.stereotype.Service;
@@ -30,6 +27,9 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService {
 
     @Override
     public AccountActionResult reset(String email) {
+        if (email == null) throw new ParameterMissingException("'email' parameter is missing");
+        if (email.isBlank()) throw new BadRequestException("'email' parameter is blank");
+
         UserEntity user = userService.findUserByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User with email " + email + " not found"));
 
@@ -43,6 +43,12 @@ public class PasswordRecoveryServiceImpl implements PasswordRecoveryService {
 
     @Override
     public AccountActionResult newPassword(String newPassword, String token) {
+        if (newPassword == null) throw new ParameterMissingException("'newPassword' parameter is missing");
+        if (newPassword.isBlank()) throw new BadRequestException("'newPassword' parameter is blank");
+
+        if (token == null) throw new ParameterMissingException("'token' parameter is missing");
+        if (token.isBlank()) throw new BadRequestException("'token' parameter is blank");
+
         try {
             TokenEntity tokenEntity = tokenLifecycleService
                     .validateAndReturnTokenByValue(token, TokenType.PASSWORD_RESET);
